@@ -102,7 +102,7 @@ path('user/recommended/', views.recommended_events, name='recommended_events'),
     path("privacy-policy/", views.privacy_policy, name="privacy_policy"),
 
     path("upcoming-features/", views.upcoming_features, name="upcoming_features"),
-    path("payment/webhook/", razorpay_webhook, name="razorpay_webhook")
+    path("payment/webhook/", views.razorpay_webhook, name="razorpay_webhook")
 
 
 ] 

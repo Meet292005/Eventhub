@@ -1082,43 +1082,49 @@ def book_event(request, event_id):
 @csrf_exempt
 def razorpay_webhook(request):
     if request.method != "POST":
-        return HttpResponse("Method Not Allowed", status=405)
+        return HttpResponse(status=405)
 
-    payload = request.body.decode("utf-8")
-    received_sig = request.headers.get("X-Razorpay-Signature")
+    payload = request.body
+    received_signature = request.headers.get("X-Razorpay-Signature")
 
-    # Verify signature (base64)
-    generated_sig = base64.b64encode(
-        hmac.new(settings.RAZORPAY_WEBHOOK_SECRET.encode(), payload.encode(), hashlib.sha256).digest()
-    ).decode()
+    secret = settings.RAZORPAY_WEBHOOK_SECRET.encode()
 
-    if not hmac.compare_digest(generated_sig, received_sig):
+    generated_signature = hmac.new(
+        secret,
+        payload,
+        hashlib.sha256
+    ).hexdigest()
+
+    if not hmac.compare_digest(generated_signature, received_signature):
         return HttpResponse("Invalid signature", status=400)
 
     data = json.loads(payload)
     event_type = data.get("event")
 
-    
-
     if event_type == "payment.captured":
-        payment_id = data["payload"]["payment"]["entity"]["id"]
-        link_id = data["payload"]["payment"]["entity"]["payment_link_id"]
+        payment = data["payload"]["payment"]["entity"]
+
+        payment_id = payment["id"]
+        link_id = payment.get("payment_link_id")
+        method = payment.get("method")   # 👈 PAYMENT METHOD (upi/card/etc)
 
         booking = Booking.objects.filter(razorpay_link_id=link_id).first()
         if booking:
             booking.payment_status = "paid"
             booking.razorpay_payment_id = payment_id
+            booking.payment_method = method
             booking.save()
 
     elif event_type == "payment.failed":
-        link_id = data["payload"]["payment"]["entity"]["payment_link_id"]
+        payment = data["payload"]["payment"]["entity"]
+        link_id = payment.get("payment_link_id")
+
         booking = Booking.objects.filter(razorpay_link_id=link_id).first()
         if booking:
             booking.payment_status = "failed"
             booking.save()
 
-    return HttpResponse("Webhook processed", status=200)
-
+    return HttpResponse("OK", status=200)
 
 # ------------------------
 # Payment Success Callback

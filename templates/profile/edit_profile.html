@@ -1,0 +1,267 @@
+{% extends "profile/base_dashboard.html" %}
+{% block content %}
+<style>
+  body {
+    background-color: #121212;
+  }
+
+  input,
+  select,
+  textarea {
+    background-color: #1e1e1e !important;
+    color: #fff !important;
+    border: 1px solid #333 !important;
+  }
+
+  label {
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .form-control:focus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+  }
+
+  .form-section {
+    background-color: #1e1e1e;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  }
+
+  .alert {
+    max-width: 600px;
+    margin: 0 auto 20px;
+  }
+
+  .form-title {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .form-title h3 {
+    color: #ffc107;
+    font-weight: bold;
+  }
+
+  .btn-warning {
+    font-weight: 600;
+    padding: 10px 30px;
+    border-radius: 8px;
+  }
+
+  .progress {
+    height: 12px;
+    background-color: #2c2c2c;
+  }
+
+  .progress-bar {
+    background-color: #ffc107;
+  }
+
+  input[type="file"] {
+    color: white;
+    background-color: #1e1e1e;
+    border: none;
+    width: 100%;
+  }
+
+  .profile-pic-preview {
+    width: 110px;
+    height: 110px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 3px solid #ffc107;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+
+  /* Modal for cropper */
+  .modal-crop {
+    display: none;
+    position: fixed;
+    z-index: 1050;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .modal-crop img {
+    max-width: 90%;
+    max-height: 80vh;
+  }
+
+  .modal-crop.active {
+    display: flex;
+  }
+
+  .modal-buttons {
+    margin-top: 15px;
+    text-align: center;
+  }
+</style>
+
+<!-- Cropper.js CSS -->
+<link  href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
+
+<div class="container py-4 px-3 px-md-5">
+  <div class="form-title">
+    <h3>📝 Edit Your Profile</h3>
+    <p class="text-light">Update your personal details below</p>
+  </div>
+
+  {% if messages %}
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center fw-semibold" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+
+  <form method="post" enctype="multipart/form-data" class="form-section mx-auto" style="max-width: 900px;">
+    {% csrf_token %}
+
+    <!-- Profile Image Preview -->
+    <div class="text-center">
+      <img src="{{ user.customer.image.url }}" alt="Profile Picture" class="profile-pic-preview" id="profilePreview">
+    </div>
+
+    <!-- Profile Image Input -->
+    <div class="mb-4">
+      <label class="form-label text-light">Change Profile Picture</label>
+      {{ c_form.image }}
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label>Name</label>
+        {{ u_form.first_name }}
+      </div>
+      <div class="col-md-6">
+        <label>Email</label>
+        {{ u_form.email }}
+      </div>
+      <div class="col-md-6">
+        <label>Phone Number</label>
+        {{ c_form.phone }}
+      </div>
+      <div class="col-md-6">
+        <label>City</label>
+        {{ c_form.city }}
+      </div>
+      <div class="col-md-6">
+        <label>State</label>
+        {{ c_form.state }}
+      </div>
+      <div class="col-md-6">
+        <label>Language</label>
+        {{ c_form.language }}
+      </div>
+      <div class="col-md-6 mb-3">
+        <label class="form-label text-light">Date of Birth</label>
+        <div class="d-flex flex-wrap gap-2 dob-select-group">
+          <div class="flex-fill">{{ c_form.dob_day }}</div>
+          <div class="flex-fill">{{ c_form.dob_month }}</div>
+          <div class="flex-fill">{{ c_form.dob_year }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-12">
+      <label>Address</label>
+      {{ c_form.address }}
+    </div>
+
+    <div class="col-12">
+      <label>Interests</label>
+      {{ c_form.interests }}
+    </div>
+
+    <!-- Submit -->
+    <div class="text-center mt-4">
+      <button type="submit" class="btn btn-warning">💾 Save Changes</button>
+    </div>
+  </form>
+</div>
+
+<!-- Crop Modal -->
+<div class="modal-crop" id="cropModal">
+  <div>
+    <img id="cropImage" src="">
+    <div class="modal-buttons">
+      <button id="cropBtn" class="btn btn-warning me-2">Crop & Save</button>
+      <button id="closeCrop" class="btn btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cropper.js JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+
+<script>
+  const imageInput = document.getElementById("id_image");
+  const preview = document.getElementById("profilePreview");
+  const cropModal = document.getElementById("cropModal");
+  const cropImage = document.getElementById("cropImage");
+  const cropBtn = document.getElementById("cropBtn");
+  const closeCrop = document.getElementById("closeCrop");
+
+  let cropper;
+
+  // When user clicks preview image -> trigger file input
+  preview.addEventListener("click", () => {
+    imageInput.click();
+  });
+
+  // Open cropper modal after selecting file
+  if (imageInput) {
+    imageInput.addEventListener("change", function (event) {
+      if (event.target.files && event.target.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          cropImage.src = e.target.result;
+          cropModal.classList.add("active");
+          if (cropper) cropper.destroy();
+          cropper = new Cropper(cropImage, {
+            aspectRatio: 1,
+            viewMode: 1,
+            movable: true,
+            zoomable: true,
+            rotatable: false,
+            scalable: false
+          });
+        };
+        reader.readAsDataURL(event.target.files[0]);
+      }
+    });
+  }
+
+  // Crop & show preview
+  cropBtn.addEventListener("click", () => {
+    const canvas = cropper.getCroppedCanvas({
+      width: 300,
+      height: 300,
+    });
+    preview.src = canvas.toDataURL("image/png");
+
+    // Replace the file input with cropped blob
+    canvas.toBlob((blob) => {
+      const file = new File([blob], "profile.png", { type: "image/png" });
+      const dataTransfer = new DataTransfer();
+      dataTransfer.items.add(file);
+      imageInput.files = dataTransfer.files;
+    });
+
+    cropModal.classList.remove("active");
+  });
+
+  closeCrop.addEventListener("click", () => {
+    cropModal.classList.remove("active");
+    if (cropper) cropper.destroy();
+  });
+</script>
+
+{% endblock %}

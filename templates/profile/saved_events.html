@@ -1,0 +1,25 @@
+{% extends "profile/base_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-white mb-3">⭐ My Saved Events</h2>
+
+    {% if saved_events %}
+        <div class="row">
+            {% for saved in saved_events %}
+                <div class="col-md-4 mb-3">
+                    <div class="card bg-dark text-white p-3 rounded-3">
+                        <h5>{{ saved.event.title }}</h5>
+                        <p>{{ saved.event.description|truncatewords:15 }}</p>
+                        <a href="{% url 'user_event_detail' saved.event.id %}" class="btn btn-sm btn-light">View</a>
+                        <a href="{% url 'remove_saved_event' saved.event.id %}" class="btn btn-sm btn-danger">Remove</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+<div class="alert alert-info text-center">
+        You have no Saved Events yet. Explore events and start booking! 🎫
+    </div>    {% endif %}
+</div>
+{% endblock %}

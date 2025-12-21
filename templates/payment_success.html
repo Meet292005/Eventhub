@@ -1,0 +1,214 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="ticket">
+
+        <!-- Banner Header -->
+        <div class="ticket-banner">
+            <h2>{{ event.title }}</h2>
+            <p>{{ event.date|date:"d M, Y" }} | {{ event.time|time:"h:i A" }}</p>
+            <p><strong>Location : </strong>{{ event.location }}</p>
+        </div>
+
+        <!-- Ticket Body -->
+        <div class="ticket-body">
+            <!-- Booking Info -->
+            <div class="ticket-details">
+                <p><strong>Booking Name:</strong> {{ booking.booking_name }}</p>
+                <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+                <p><strong>Order ID:</strong> {{ booking.order_id }}</p>
+                <p><strong>Tickets:</strong> {{ booking.tickets_booked }}</p>
+                <p><strong>Seats:</strong>
+                    {% if seat_numbers %}
+                    {% for s in seat_numbers %}
+                    {{ s }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                    {% else %}
+                    Assigning...
+                    {% endif %}
+                </p>
+
+                <p><strong> Original Amount:</strong>
+                    {% if event.price == 0 %}
+                    Free
+                    {% else %}
+                    {% if tokens_used and tokens_used > 0 %}
+                    ₹ {{ original_amount }}
+                    <br><br> <strong>HUB Tokens Used:</strong> {{ tokens_used }} (₹ {{ tokens_used }})
+                    <br><br><strong>Final Amount:</strong> ₹ {{ final_amount }}
+                    {% else %}
+                    ₹ {{ original_amount }}
+                    {% endif %}
+                    {% endif %}
+                </p>
+
+                <p><strong>Status:</strong>
+                    {% if booking.payment_status == "paid" %}
+                    <span class="text-success">PAID ✅</span>
+                    {% else %}
+                    <span class="text-danger">PENDING ❌</span>
+                    {% endif %}
+                </p>
+                <p><strong>Organizer:</strong> {{ event.organizer.organization_name }}</p>
+                <p><strong>Contact:</strong> {{ event.organizer.user.email }} | {{ event.organizer.phone }}</p>
+                <p>
+                    <strong>Payment Method:</strong>
+                    {% if booking.payment_method %}
+                    {% if "card" in booking.payment_method|lower %}
+                    <i class="fa fa-credit-card"></i> {{ booking.payment_method }}
+                    {% elif "upi" in booking.payment_method|lower %}
+                    <i class="fa fa-mobile"></i> {{ booking.payment_method }}
+                    {% elif "wallet" in booking.payment_method|lower %}
+                    <i class="fa fa-wallet"></i> {{ booking.payment_method }}
+                    {% else %}
+                    <i class="fa fa-money-bill"></i> {{ booking.payment_method }}
+                    {% endif %}
+                    {% else %}
+                    Not available
+                    {% endif %}
+                </p>
+                {% if booking.refund_amount %}
+                <p><strong>Refunded:</strong> ₹{{ booking.refund_amount }}</p>
+                {% endif %}
+            </div>
+
+            <!-- QR -->
+            <div class="ticket-qr text-center">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR Code" />
+                <p class="qr-text">Scan to verify your ticket</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="ticket-footer">
+            <p>* Please carry a valid ID along with this ticket. Terms & Conditions apply.</p>
+            {% if booking.payment_status == "paid" %}
+            <a href="{% url 'all_events' %}" class="btn btn-secondary">⬅️ Back to All Events</a>
+
+            <button onclick="window.print()" class="btn btn-warning">🖨️ Print Ticket</button>
+            <button onclick="shareTicket()" class="btn btn-primary">
+                📤 Share Ticket
+            </button>
+
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+function shareTicket() {
+    const ticketUrl = window.location.href;
+    const title = "🎟 My EventHub Ticket";
+    const text = "Here is my ticket. Please scan the QR at entry.";
+
+    if (navigator.share) {
+        navigator.share({
+            title: title,
+            text: text,
+            url: ticketUrl
+        }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(ticketUrl).then(() => {
+            alert("✅ Ticket link copied to clipboard!");
+        });
+    }
+}
+</script>
+
+
+<style>
+    .ticket {
+        border: 2px solid #FFA500;
+        border-radius: 12px;
+        background: #fff;
+        font-family: sans-serif;
+        max-width: 900px;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        overflow: hidden;
+        /* ensures banner top is clipped properly */
+    }
+
+    /* Banner Header */
+    .ticket-banner {
+        background: linear-gradient(135deg, #FFA500, #FF7300);
+        color: #fff;
+        text-align: center;
+        padding: 20px;
+    }
+
+    .ticket-banner h2 {
+        margin: 0;
+        font-size: 26px;
+        font-weight: bold;
+    }
+
+    .ticket-banner p {
+        margin: 3px 0;
+    }
+
+    /* Body Layout */
+    .ticket-body {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .ticket-details {
+        flex: 2;
+        color: #000;
+    }
+
+    .ticket-qr img {
+        width: 150px;
+        height: 150px;
+    }
+
+    .qr-text {
+        font-size: 12px;
+        color: #555;
+    }
+
+    /* Footer */
+    .ticket-footer {
+        text-align: center;
+        padding: 10px 15px;
+        border-top: 1px dashed #ccc;
+        font-size: 12px;
+    }
+
+    /* Responsive - Desktop */
+    @media (min-width: 768px) {
+        .ticket-body {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .ticket-qr {
+            text-align: right;
+        }
+    }
+
+    /* Print */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .ticket,
+        .ticket * {
+            visibility: visible;
+        }
+
+        .ticket {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

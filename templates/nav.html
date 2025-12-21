@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}EventHub{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      background: url('https://images.unsplash.com/photo-1518972559570-7cc1309f3229?auto=format&fit=crop&w=1470&q=80') no-repeat center center fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', sans-serif;
+      color: #fff;
+    }
+
+    /* NAVBAR */
+    .nav-link {
+      color: #ffffff !important;
+      font-size: 0.95rem;
+      padding: 0.4rem 0.75rem;
+      position: relative;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: orange !important;
+    }
+
+    .navbar-brand {
+      color: orange !important;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
+    .nav-link::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 2px;
+      width: 0%;
+      background-color: orange;
+      transition: width 0.3s ease-in-out;
+    }
+
+    .nav-link:hover::after,
+    .nav-link.active::after {
+      width: 100%;
+    }
+
+    .username-truncate {
+      max-width: 90px;
+      font-size: 0.9rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='orange' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    /* ---------------- CHATBOX UI ---------------- */
+    .eh-chat-launcher {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #ffb347, #ffcc33);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+      z-index: 9999;
+      cursor: pointer;
+      border: 3px solid rgba(0, 0, 0, 0.12);
+    }
+
+    .eh-chat-window {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 360px;
+      max-width: calc(100% - 48px);
+      height: 520px;
+      background: linear-gradient(180deg, rgba(10, 10, 10, 0.95), rgba(30, 30, 30, 0.95));
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+    }
+
+    .eh-chat-header {
+      padding: 12px 14px;
+      background: rgba(0, 0, 0, 0.55);
+      color: #ffd88a;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .eh-chat-header button {
+      background: transparent;
+      border: none;
+      color: #ffd88a;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .eh-chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #e6eef6;
+      line-height: 1.45;
+      background: rgba(0, 0, 0, 0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    /* Typing indicator */
+    .eh-chat-typing {
+      display: none;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #c0c0c0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .typing-dots {
+      display: inline-block;
+      width: 34px;
+      text-align: left;
+    }
+
+    .typing-dots span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      margin-right: 4px;
+      border-radius: 50%;
+      background: #ffd88a;
+      opacity: 0.25;
+      animation: typing 1s infinite;
+    }
+
+    .typing-dots span:nth-child(2) {
+      animation-delay: 0.15s
+    }
+
+    .typing-dots span:nth-child(3) {
+      animation-delay: 0.3s
+    }
+
+    @keyframes typing {
+      0% {
+        opacity: 0.3;
+        transform: translateY(0)
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateY(-4px)
+      }
+
+      100% {
+        opacity: 0.3;
+        transform: translateY(0)
+      }
+    }
+
+    .eh-chat-input {
+      display: flex;
+      gap: 8px;
+      padding: 10px;
+      background: rgba(0, 0, 0, 0.45);
+      align-items: center;
+    }
+
+    .eh-chat-input input[type="text"] {
+      flex: 1;
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.02);
+      color: #fff;
+      outline: none;
+    }
+
+    .eh-chat-input button {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: none;
+      background: orange;
+      color: #000;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* initial bubble content with clickable buttons */
+    .initial-bubble {
+      padding: 10px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #0f1720, #162029);
+      color: #e6f5ff;
+      border: 1px solid rgba(255, 215, 138, 0.06);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+      max-width: 320px;
+    }
+
+    .initial-bubble h4 {
+      margin: 0 0 8px 0;
+      color: #ffd88a;
+      font-size: 14px;
+    }
+
+    .initial-bubble .item-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .initial-bubble .item-list li {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .initial-bubble .item-button {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .initial-bubble .item-button:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .initial-bubble .item-button.active {
+      background: linear-gradient(90deg, #ffd89b, #ffb347);
+      color: #000;
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+
+    /* Message bubbles */
+    .eh-chat-message {
+      max-width: 90%;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+
+    .eh-chat-message .bubble {
+      display: inline-block;
+      padding: 10px 12px;
+      border-radius: 12px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+    }
+
+    .eh-chat-message.role-user {
+      align-self: flex-end;
+      text-align: right;
+    }
+
+    .eh-chat-message.role-user .bubble {
+      background: linear-gradient(90deg, #ffd89b, #ffb347);
+      color: #000;
+      border-bottom-right-radius: 4px;
+    }
+
+    .eh-chat-message.role-bot {
+      align-self: flex-start;
+      text-align: left;
+    }
+
+    .eh-chat-message.role-bot .bubble {
+      background: linear-gradient(180deg, #0f1720, #162029);
+      color: #e6f5ff;
+      border-bottom-left-radius: 4px;
+      border: 1px solid rgba(255, 215, 138, 0.06);
+    }
+
+    .eh-chat-message.role-bot .bubble .meta {
+      display: block;
+      color: #ffd88a;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .eh-chat-message.role-bot .bubble p {
+      margin: 0 0 6px 0;
+    }
+
+    .eh-chat-message.role-bot .bubble pre {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 8px;
+      border-radius: 8px;
+      overflow: auto;
+      margin: 6px 0;
+      color: #e6f5ff;
+    }
+
+    .eh-chat-message.role-bot .bubble a {
+      color: #ffd88a;
+      text-decoration: underline;
+    }
+
+    .eh-chat-message.role-bot .bubble .first-line {
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: block;
+      color: #ffd88a;
+    }
+
+    .eh-quick-replies {
+      display: none;
+    }
+
+    /* ================= SESSION MESSAGE ================= */
+    .session-alert {
+      font-size: 0.95rem;
+      border-radius: 10px;
+    }
+
+    @media (max-width: 576px) {
+      .session-alert {
+        font-size: 0.9rem;
+        padding: 10px;
+      }
+    }
+
+    /* ================= CHATBOT MOBILE FIX ================= */
+
+    /* Make chat full-width on mobile */
+    @media (max-width: 576px) {
+
+      .eh-chat-window {
+        left: 8px !important;
+        right: 8px !important;
+        bottom: 76px !important;
+        width: auto !important;
+        height: 70vh !important;
+        max-height: 70vh;
+        border-radius: 14px;
+      }
+
+      .eh-chat-header {
+        padding: 10px 12px;
+        font-size: 14px;
+      }
+
+      .eh-chat-messages {
+        font-size: 13px;
+        padding: 10px;
+      }
+
+      .eh-chat-input {
+        padding: 8px;
+      }
+
+      .eh-chat-input input[type="text"] {
+        font-size: 13px;
+        padding: 8px 10px;
+      }
+
+      .eh-chat-input button {
+        font-size: 13px;
+        padding: 7px 12px;
+      }
+
+      .initial-bubble {
+        max-width: 100%;
+        font-size: 13px;
+      }
+
+      .eh-chat-message .bubble {
+        font-size: 13px;
+      }
+
+      .eh-chat-launcher {
+        width: 54px;
+        height: 54px;
+        bottom: 14px;
+        right: 14px;
+      }
+    }
+
+
+    /* ================= EVENT TOAST NOTIFICATION ================= */
+    .event-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      width: 320px;
+      background: rgba(0, 0, 0, 0.92);
+      color: #fff;
+      border-radius: 14px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+      z-index: 9999;
+      transform: translateX(-130%);
+      opacity: 0;
+      transition: all 0.6s ease;
+    }
+
+    .event-toast.show {
+      transform: translateX(0);
+      opacity: 1;
+    }
+
+    .event-toast .toast-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      font-weight: 700;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .event-toast .toast-header span {
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .event-toast .toast-body {
+      padding: 12px 14px;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      color: #eaeaea;
+    }
+
+
+    @media (max-width: 540px) {
+      .eh-chat-window {
+        right: 12px;
+        left: 12px;
+        width: auto;
+        bottom: 84px;
+      }
+
+      .eh-chat-launcher {
+        right: 12px;
+        bottom: 12px;
+      }
+    }
+
+    /* ================= GLOBAL SOFT FADE ================= */
+body {
+  animation: pageFade 0.8s ease-out;
+}
+
+@keyframes pageFade {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= NAVBAR SLIDE ================= */
+.navbar {
+  animation: navDrop 0.6s ease-out;
+}
+
+@keyframes navDrop {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= CHAT LAUNCHER FLOAT ================= */
+.eh-chat-launcher {
+  animation: floatPulse 3s ease-in-out infinite;
+}
+
+@keyframes floatPulse {
+  0% {
+    transform: translateY(0);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  50% {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 26px rgba(255, 180, 60, 0.6);
+  }
+  100% {
+    transform: translateY(0);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* ================= CHAT WINDOW OPEN ANIMATION ================= */
+.eh-chat-window {
+  transform-origin: bottom right;
+  animation: chatOpen 0.35s ease-out;
+}
+
+@keyframes chatOpen {
+  from {
+    opacity: 0;
+    transform: scale(0.85) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* ================= MESSAGE SLIDE IN ================= */
+.eh-chat-message {
+  animation: messageIn 0.3s ease-out;
+}
+
+@keyframes messageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ================= BOT MESSAGE GLOW ================= */
+.eh-chat-message.role-bot .bubble {
+  animation: softGlow 2.5s ease-in-out infinite alternate;
+}
+
+@keyframes softGlow {
+  from {
+    box-shadow: 0 0 0 rgba(255, 216, 138, 0);
+  }
+  to {
+    box-shadow: 0 0 14px rgba(255, 216, 138, 0.25);
+  }
+}
+
+/* ================= BUTTON HOVER LIFT ================= */
+button,
+.btn {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 170, 0, 0.35);
+}
+
+/* ================= TOAST POP ANIMATION ================= */
+.event-toast.show {
+  animation: toastPop 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+}
+
+@keyframes toastPop {
+  from {
+    transform: translateX(-140%) scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* ================= INPUT FOCUS GLOW ================= */
+.eh-chat-input input[type="text"]:focus {
+  box-shadow: 0 0 10px rgba(255, 185, 80, 0.4);
+  border-color: orange;
+}
+
+  </style>
+</head>
+
+<body class="bg-dark text-light">
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top bg-dark bg-opacity-60" style="padding: 0.5rem 0;">
+    <div class="container">
+      <a class="navbar-brand d-flex align-items-center text-warning fw-bold" href="{% url 'home' %}">⭐ EventHub</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav align-items-center">
+          <li class="nav-item"><a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+              href="{% url 'home' %}">🏠 Home</a></li>
+          <li class="nav-item"><a
+              class="nav-link {% if request.resolver_match.url_name == 'all_events' %}active{% endif %}"
+              href="{% url 'all_events' %}">🎫 Events</a></li>
+          <li class="nav-item"><a
+              class="nav-link {% if request.resolver_match.url_name == 'about_us' %}active{% endif %}"
+              href="{% url 'about_us' %}">📘 About Us</a></li>
+          <li class="nav-item"><a
+              class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}"
+              href="{% url 'contact' %}">📞 Contact</a></li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.resolver_match.url_name == 'upcoming_features' %}active{% endif %}"
+              href="{% url 'upcoming_features' %}">
+              🚀 Features
+            </a>
+          </li>
+
+
+          {% if user.is_authenticated %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button"
+              data-bs-toggle="dropdown">
+              {% if user.customer.image %}
+              <img src="{{ user.customer.image.url }}" class="rounded-circle me-2" style="width: 28px; height: 28px;">
+              {% else %}
+              <img src="{{ MEDIA_URL }}profile_pics/default.jpg" class="rounded-circle me-2"
+                style="width: 28px; height: 28px;">
+              {% endif %}
+              <span class="username-truncate">{{ user.username }}</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'profile' %}">Dashboard</a></li>
+              <li>
+                <form method="POST" action="{% url 'logout' %}">{% csrf_token %}<button type="submit"
+                    class="dropdown-item">Logout</button></form>
+              </li>
+            </ul>
+          </li>
+          {% else %}
+          <li class="nav-item"><a class="btn btn-outline-warning btn-sm ms-2" href="{% url 'login' %}">🔐 Login</a></li>
+          <li class="nav-item"><a class="btn btn-warning btn-sm ms-2" href="{% url 'register' %}">📝 Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- DJANGO MESSAGES -->
+  {% if messages %}
+  <div class="container mt-2 px-2">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show text-center shadow-sm session-alert"
+      role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- PAGE CONTENT -->
+  {% block content %}{% endblock %}
+
+  <!-- CHAT WIDGET -->
+  <div id="eh-chat-launcher" class="eh-chat-launcher" title="Open EventHub Helper" aria-label="Open chat">
+    <i class="fa-solid fa-comment-dots" style="font-size:20px; color:#000;"></i>
+  </div>
+
+  <div id="eh-chat-window" class="eh-chat-window" role="dialog" aria-label="EventHub Helper">
+    <div class="eh-chat-header">
+      <div>EventHub Helper</div>
+      <div>
+        <button id="eh-chat-minimize-btn" title="Minimize">—</button>
+        <button id="eh-chat-close-btn" title="Close">✕</button>
+      </div>
+    </div>
+
+    <div id="eh-chat-messages" class="eh-chat-messages" aria-live="polite" role="log"></div>
+
+    <!-- Typing indicator -->
+    <div id="eh-chat-typing" class="eh-chat-typing" aria-hidden="true">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <div class="typing-text">EventHub Helper is typing…</div>
+    </div>
+
+    <div id="eh-quick-replies" class="eh-quick-replies" aria-hidden="true"></div>
+
+    <div class="eh-chat-input">
+      <input id="eh-chat-input" type="text" placeholder="Ask something about EventHub..." aria-label="Ask EventHub">
+      <button id="eh-chat-send-btn" type="button">Send</button>
+    </div>
+  </div>
+
+  <!-- Chat widget script (unchanged) -->
+  <script>
+    (function () {
+      const N8N_CHAT_URL = "https://n8n-4-eg2v.onrender.com/webhook/db87e4c3-5587-4e9e-b0b8-7ac60b15ccd8/chat";
+      const launcher = document.getElementById("eh-chat-launcher");
+      const windowEl = document.getElementById("eh-chat-window");
+      const closeBtn = document.getElementById("eh-chat-close-btn");
+      const minimizeBtn = document.getElementById("eh-chat-minimize-btn");
+      const messagesEl = document.getElementById("eh-chat-messages");
+      const typingEl = document.getElementById("eh-chat-typing");
+      const inputEl = document.getElementById("eh-chat-input");
+      const sendBtn = document.getElementById("eh-chat-send-btn");
+
+      const ASSISTANT_NAME = "EventHub Helper";
+      const sessionId = ((window.crypto && crypto.randomUUID && crypto.randomUUID()) || ("session-" + Date.now()));
+
+      const PREDEFINED = [
+        "Show upcoming events",
+        "How do I cancel a ticket?",
+        "My tickets aren't showing",
+        "Event categories",
+        "Contact support"
+      ];
+
+      let libsLoaded = false;
+      let firstOpen = true;
+      let currentRequestAbortController = null;
+
+      function loadLib(url) {
+        return new Promise((res, rej) => {
+          const s = document.createElement('script');
+          s.src = url;
+          s.onload = res;
+          s.onerror = rej;
+          document.head.appendChild(s);
+        });
+      }
+      async function ensureLibs() {
+        if (libsLoaded) return;
+        await loadLib('https://cdn.jsdelivr.net/npm/marked/marked.min.js').catch(() => { });
+        await loadLib('https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js').catch(() => { });
+        libsLoaded = true;
+      }
+
+      function escapeHtml(str) {
+        return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      }
+
+      function scrollToBottom(smooth = true) {
+        try {
+          const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+          if (!smooth || prefersReduced) messagesEl.scrollTop = messagesEl.scrollHeight;
+          else messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+        } catch (e) { messagesEl.scrollTop = messagesEl.scrollHeight; }
+      }
+
+      function appendUserMessage(text) {
+        if (!messagesEl) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'eh-chat-message role-user';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        bubble.textContent = text;
+        wrapper.appendChild(bubble);
+        messagesEl.appendChild(wrapper);
+        scrollToBottom();
+      }
+
+      function appendInitialClickableList() {
+        if (!messagesEl) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'eh-chat-message role-bot';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble initial-bubble';
+
+        const h = document.createElement('h4');
+        h.textContent = 'Here are some things I can help with:';
+        bubble.appendChild(h);
+
+        const ul = document.createElement('ul');
+        ul.className = 'item-list';
+        PREDEFINED.forEach((q) => {
+          const li = document.createElement('li');
+
+          const label = document.createElement('div');
+          label.style.flex = '1';
+          label.style.color = '#e6f5ff';
+          label.style.fontSize = '13px';
+          label.textContent = q;
+
+          const btn = document.createElement('button');
+          btn.className = 'item-button';
+          btn.textContent = 'Ask';
+          btn.setAttribute('data-q', q);
+          btn.addEventListener('click', (ev) => {
+            document.querySelectorAll('.item-button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            choosePredefined(q, btn);
+          });
+
+          li.appendChild(label);
+          li.appendChild(btn);
+          ul.appendChild(li);
+        });
+
+        bubble.appendChild(ul);
+        wrapper.appendChild(bubble);
+        messagesEl.appendChild(wrapper);
+        scrollToBottom(false);
+      }
+
+      function appendBotMessage(raw) {
+        if (!messagesEl) return;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'eh-chat-message role-bot';
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+
+        raw = String(raw || '').trim();
+        if (!raw) raw = 'No reply';
+
+        const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+        const first = lines.shift() || '';
+        let inner = `<span class="meta">${ASSISTANT_NAME}</span>`;
+        inner += `<span class="first-line">${escapeHtml(first)}</span>`;
+
+        if (lines.length) {
+          const looksLikeList = lines.every(l => /^(-|\*|\d+\.)\s+/.test(l));
+          if (looksLikeList) {
+            inner += '<ul>';
+            lines.forEach(l => {
+              const item = l.replace(/^(-|\*|\d+\.)\s+/, '');
+              inner += `<li>${escapeHtml(item)}</li>`;
+            });
+            inner += '</ul>';
+          } else {
+            lines.forEach(p => inner += `<p>${escapeHtml(p)}</p>`);
+          }
+        }
+
+        if (window.marked && window.DOMPurify) {
+          try {
+            const md = marked.parse(inner);
+            bubble.innerHTML = DOMPurify.sanitize(md);
+          } catch (e) {
+            bubble.innerHTML = inner;
+          }
+        } else {
+          bubble.innerHTML = inner;
+        }
+
+        wrapper.appendChild(bubble);
+        messagesEl.appendChild(wrapper);
+        scrollToBottom();
+      }
+
+      function setTyping(show) {
+        if (!typingEl) return;
+        typingEl.style.display = show ? 'flex' : 'none';
+        typingEl.setAttribute('aria-hidden', show ? 'false' : 'true');
+        if (show) scrollToBottom();
+      }
+
+      async function choosePredefined(q, btnEl) {
+        appendUserMessage(q);
+        setTyping(true);
+        if (btnEl) btnEl.disabled = true;
+
+        try {
+          if (currentRequestAbortController) currentRequestAbortController.abort();
+          currentRequestAbortController = new AbortController();
+          const signal = currentRequestAbortController.signal;
+
+          const payload = { sessionId, chatInput: q };
+          const res = await fetch(N8N_CHAT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload),
+            signal
+          });
+
+          if (!res.ok) {
+            const txt = await res.text().catch(() => '');
+            throw new Error(`n8n ${res.status}: ${txt}`);
+          }
+
+          const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+          let data;
+          if (ct.includes('application/json')) data = await res.json();
+          else {
+            const txt = await res.text();
+            try { data = JSON.parse(txt); } catch (e) { data = txt; }
+          }
+
+          const reply = extractReply(data) || 'No reply from assistant.';
+          await ensureLibs().catch(() => { });
+          appendBotMessage(reply);
+        } catch (err) {
+          if (err.name === 'AbortError') appendBotMessage('Previous request canceled.');
+          else {
+            console.error(err);
+            const msg = (err.message && err.message.length) ? `Sorry — couldn't reach assistant (${escapeHtml(String(err.message))})` : "Sorry — couldn't reach assistant.";
+            appendBotMessage(msg);
+          }
+        } finally {
+          setTyping(false);
+          if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('active'); }
+          currentRequestAbortController = null;
+        }
+      }
+
+      function extractReply(data) {
+        if (!data) return null;
+        if (typeof data === 'string') return data;
+        if (Array.isArray(data)) {
+          if (data.length === 0) return null;
+          const first = data[0];
+          if (typeof first === 'string') return first;
+          if (first.text || first.reply) return first.text || first.reply;
+          return JSON.stringify(data);
+        }
+        const keys = ['reply', 'text', 'answer', 'output', 'message', 'result'];
+        for (const k of keys) {
+          if (data[k]) {
+            if (k === 'result' && Array.isArray(data.result) && data.result[0]) {
+              const r = data.result[0];
+              return r.text || r.reply || JSON.stringify(r);
+            }
+            return data[k];
+          }
+        }
+        try { if (data[0] && (data[0].text || data[0].reply)) return data[0].text || data[0].reply; } catch (e) { }
+        return JSON.stringify(data);
+      }
+
+      async function sendTypedMessage() {
+        const msg = inputEl.value.trim();
+        if (!msg) return;
+        appendUserMessage(msg);
+        inputEl.value = '';
+        setTyping(true);
+
+        try {
+          if (currentRequestAbortController) currentRequestAbortController.abort();
+          currentRequestAbortController = new AbortController();
+          const signal = currentRequestAbortController.signal;
+
+          const payload = { sessionId, chatInput: msg };
+          const res = await fetch(N8N_CHAT_URL, {
+            method: 'POST',
+            mode: 'cors',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(payload),
+            signal
+          });
+
+          if (!res.ok) {
+            const txt = await res.text().catch(() => '');
+            throw new Error(`n8n ${res.status}: ${txt}`);
+          }
+
+          const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+          let data;
+          if (ct.includes('application/json')) data = await res.json();
+          else {
+            const txt = await res.text();
+            try { data = JSON.parse(txt); } catch (e) { data = txt; }
+          }
+
+          const reply = extractReply(data) || 'No reply from assistant.';
+          await ensureLibs().catch(() => { });
+          appendBotMessage(reply);
+        } catch (err) {
+          if (err.name === 'AbortError') appendBotMessage('Previous request canceled.');
+          else {
+            console.error(err);
+            appendBotMessage("Sorry — couldn't reach assistant.");
+          }
+        } finally {
+          setTyping(false);
+          currentRequestAbortController = null;
+        }
+      }
+
+      function openChat() {
+        windowEl.classList.add('open');
+        windowEl.style.display = 'flex';
+        windowEl.style.flexDirection = 'column';
+        if (inputEl) inputEl.focus();
+        ensureLibs().catch(() => { });
+        if (firstOpen) {
+          appendInitialClickableList();
+          firstOpen = false;
+        }
+      }
+      function closeChat() {
+        windowEl.classList.remove('open');
+        windowEl.style.display = 'none';
+      }
+
+      if (launcher) launcher.addEventListener('click', openChat);
+      if (closeBtn) closeBtn.addEventListener('click', closeChat);
+      if (minimizeBtn) minimizeBtn.addEventListener('click', closeChat);
+      if (sendBtn) sendBtn.addEventListener('click', sendTypedMessage);
+      if (inputEl) inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendTypedMessage(); } });
+
+      window.EHAssistant = {
+        sendMessage: async (text) => {
+          appendUserMessage(text);
+          try {
+            setTyping(true);
+            const payload = { sessionId, chatInput: text };
+            const res = await fetch(N8N_CHAT_URL, {
+              method: 'POST', mode: 'cors',
+              headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+            let data = ct.includes('application/json') ? await res.json() : await res.text();
+            const reply = extractReply(data) || 'No reply from assistant.';
+            await ensureLibs().catch(() => { });
+            appendBotMessage(reply);
+            setTyping(false);
+            return reply;
+          } catch (e) {
+            setTyping(false);
+            appendBotMessage('Error contacting assistant.');
+            return null;
+          }
+        },
+        open: openChat, close: closeChat, sessionId
+      };
+    })();
+  </script>
+
+  <!-- Session timeout + keep-alive (no new view). Active only for logged-in users -->
+  {% if user.is_authenticated %}
+  <script>
+    (function () {
+      const LOGOUT_TIME = 3 * 60 * 60 * 1000; // 2 hours
+      const WARNING_BEFORE = 5 * 60 * 1000;   // 5 minutes
+      const WARNING_TIME = LOGOUT_TIME - WARNING_BEFORE;
+
+      // URL to ping to refresh session (GET is fine; no CSRF). Use '/' or '/profile/' if preferred.
+      const PING_URL = window.location.pathname || '/';
+
+      let warningShown = false;
+      let warningTimeout = null;
+      let logoutTimeout = null;
+
+      function clearAllTimers() {
+        if (warningTimeout) { clearTimeout(warningTimeout); warningTimeout = null; }
+        if (logoutTimeout) { clearTimeout(logoutTimeout); logoutTimeout = null; }
+      }
+
+      function scheduleTimers() {
+        clearAllTimers();
+        warningShown = false;
+
+        warningTimeout = setTimeout(() => {
+          showWarningPopup();
+        }, WARNING_TIME);
+
+        logoutTimeout = setTimeout(() => {
+          window.location.href = "{% url 'logout' %}";
+        }, LOGOUT_TIME);
+      }
+
+      async function pingSession() {
+        try {
+          const resp = await fetch(PING_URL, {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'text/html,application/xhtml+xml,application/json' },
+            cache: 'no-store'
+          });
+          return resp.ok;
+        } catch (e) {
+          console.warn('session ping failed', e);
+          return false;
+        }
+      }
+
+      function showWarningPopup() {
+        if (warningShown) return;
+        warningShown = true;
+
+        const popup = document.createElement('div');
+        popup.id = 'session-warning-popup';
+        popup.style = `
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.6);
+        z-index: 10000;
+      `;
+
+        popup.innerHTML = `
+        <div style="background:#fff;padding:22px;border-radius:10px;width:380px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.35);">
+          <h4 style="margin:0 0 8px;color:#333;">Session Expiring</h4>
+          <p style="margin:0 0 14px;color:#555;">You will be logged out in 5 minutes due to inactivity.</p>
+          <div style="display:flex;justify-content:center;gap:10px;">
+            <button id="stayLoggedInBtn" style="padding:8px 14px;border-radius:6px;border:none;cursor:pointer;background:#007bff;color:#fff;">Stay Logged In</button>
+            <button id="logoutNowBtn" style="padding:8px 14px;border-radius:6px;border:1px solid #ccc;cursor:pointer;background:#fff;color:#333;">Log Out Now</button>
+          </div>
+          <div id="session-countdown" style="margin-top:10px;color:#666;font-size:13px;"></div>
+        </div>
+      `;
+
+        document.body.appendChild(popup);
+
+        const countdownEl = document.getElementById('session-countdown');
+        let secondsLeft = Math.ceil(WARNING_BEFORE / 1000);
+        countdownEl.textContent = `Auto logout in ${formatSeconds(secondsLeft)}.`;
+
+        const countdownInterval = setInterval(() => {
+          secondsLeft -= 1;
+          if (secondsLeft <= 0) {
+            clearInterval(countdownInterval);
+          } else {
+            countdownEl.textContent = `Auto logout in ${formatSeconds(secondsLeft)}.`;
+          }
+        }, 1000);
+
+        document.getElementById('stayLoggedInBtn').addEventListener('click', async () => {
+          // Ping an existing page to refresh server session
+          await pingSession().catch(() => { });
+          try { document.body.removeChild(popup); } catch (e) { }
+          clearInterval(countdownInterval);
+          scheduleTimers();
+        });
+
+        document.getElementById('logoutNowBtn').addEventListener('click', () => {
+          window.location.href = "{% url 'logout' %}";
+        });
+
+        if (logoutTimeout) { clearTimeout(logoutTimeout); logoutTimeout = null; }
+        logoutTimeout = setTimeout(() => {
+          window.location.href = "{% url 'logout' %}";
+        }, WARNING_BEFORE);
+      }
+
+      function formatSeconds(s) {
+        const mm = Math.floor(s / 60);
+        const ss = s % 60;
+        return `${String(mm).padStart(2, '0')}:${String(ss).padStart(2, '0')}`;
+      }
+
+      ['click', 'mousemove', 'keydown', 'scroll', 'touchstart'].forEach(evt => {
+        window.addEventListener(evt, scheduleTimers, { passive: true });
+      });
+
+      scheduleTimers();
+    })();
+  </script>
+  {% endif %}
+
+  <!-- 🔔 EVENT NOTIFICATION TOAST -->
+  <div id="eventToast" class="event-toast">
+    <div class="toast-header">
+      <span id="toastTitle">📢 EventHub Update</span>
+      <span onclick="closeEventToast()">✖</span>
+    </div>
+    <div id="toastMessage" class="toast-body"></div>
+  </div>
+
+
+  <script>
+    (function () {
+
+      /* 🔒 Show only once per page load */
+      if (window.__eventToastLoaded) return;
+      window.__eventToastLoaded = true;
+
+      const toastEl = document.getElementById("eventToast");
+      const titleEl = document.getElementById("toastTitle");
+      const msgEl = document.getElementById("toastMessage");
+
+      function showToast(title, message) {
+        titleEl.innerText = title;
+        msgEl.innerText = message;
+        toastEl.classList.add("show");
+
+        setTimeout(() => {
+          toastEl.classList.remove("show");
+        }, 8000); // auto close after 8 sec
+      }
+
+      window.closeEventToast = function () {
+        toastEl.classList.remove("show");
+      };
+
+
+      fetch("{% url 'fetch_site_notifications' %}")
+        .then(res => res.json())
+        .then(data => {
+          if (!data.notifications || !data.notifications.length) return;
+
+          // show max 1–2 notifications politely
+          data.notifications.slice(0, 2).forEach((n, i) => {
+            setTimeout(() => {
+              showToast(n.title, n.message);
+            }, i * 15000); // 15 sec gap between notifications
+          });
+        })
+        .catch(err => console.warn("Notification fetch failed", err));
+
+    })();
+  </script>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

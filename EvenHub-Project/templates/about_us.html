@@ -1,0 +1,209 @@
+{% extends 'nav.html' %}
+
+{% block title %} About Us {% endblock %}
+
+{% block content %}
+<style>
+    .about-container {
+        max-width: 1000px;
+        margin: 2rem auto;
+        padding: 2rem;
+        color: white;
+        background: #1e1e1e;
+        border-radius: 15px;
+        box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
+    .about-hero {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .about-hero h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #ffc107;
+    }
+
+    .about-hero p {
+        font-size: 1.2rem;
+        color: #ccc;
+    }
+
+    .section {
+        margin-bottom: 2rem;
+    }
+
+    .section h2 {
+        color: #ff5722;
+        margin-bottom: 0.5rem;
+        font-size: 1.5rem;
+    }
+
+    .section p {
+        line-height: 1.6;
+        color: #ddd;
+    }
+
+    .why-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    .why-list li {
+        padding-left: 1.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .why-list li::before {
+        content: "✔";
+        position: absolute;
+        left: 0;
+        color: #ffc107;
+    }
+
+    /* Team section */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+
+    .team-member {
+        background: #2c2c2c;
+        padding: 1rem;
+        border-radius: 10px;
+        text-align: center;
+        box-shadow: 0px 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .team-member img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin-bottom: 0.5rem;
+        object-fit: cover;
+    }
+
+    .team-member h4 {
+        margin-bottom: 0.2rem;
+        color: #ffc107;
+    }
+
+    .team-member p {
+        font-size: 0.9rem;
+        color: #ccc;
+    }
+
+    /* CTA */
+    .cta-section {
+        text-align: center;
+        margin-top: 2rem;
+    }
+
+    .cta-btn {
+        background: #ffc107;
+        color: black;
+        padding: 0.8rem 2rem;
+        border-radius: 8px;
+        font-weight: bold;
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: 0.3s;
+        display: inline-block;
+    }
+
+    .cta-btn:hover {
+        background: #ff9800;
+        color: white;
+    }
+</style>
+
+<div class="about-container">
+    <!-- Hero Section -->
+    <div class="about-hero">
+        <h1>About Us</h1>
+        <p>Connecting you to the events you love, one click at a time.</p>
+    </div>
+
+    <!-- Our Story -->
+    <div class="section">
+        <h2>Our Story</h2>
+        <p>
+            We started this platform with a simple goal — to make discovering and booking events
+            easier, faster, and more exciting. From small local gatherings to large-scale concerts,
+            we’ve built a space where people can find events that inspire, entertain, and connect them.
+        </p>
+    </div>
+
+    <!-- Mission -->
+    <div class="section">
+        <h2>Our Mission</h2>
+        <p>
+            To bring people together through unforgettable experiences. We work with trusted organizers
+            to ensure that every event listed on our platform delivers value, quality, and excitement.
+        </p>
+    </div>
+
+    <!-- How It Works -->
+    <div class="section">
+        <h2>How It Works</h2>
+        <p>We make event discovery simple in three steps:</p>
+        <ul class="why-list">
+            <li>Browse events by category, date, or location.</li>
+            <li>Select the one that excites you the most.</li>
+            <li>Book your ticket instantly with our secure checkout.</li>
+        </ul>
+    </div>
+
+    <!-- Our Values -->
+    <div class="section">
+        <h2>Our Core Values</h2>
+        <p>Everything we do is guided by our principles:</p>
+        <ul class="why-list">
+            <li>Transparency in pricing and information.</li>
+            <li>Commitment to user satisfaction.</li>
+            <li>Collaboration with trusted partners.</li>
+            <li>Continuous improvement of our platform.</li>
+        </ul>
+    </div>
+
+    <!-- Why Choose Us -->
+    <div class="section">
+        <h2>Why Choose Us?</h2>
+        <ul class="why-list">
+            <li>Verified and trusted event organizers</li>
+            <li>Secure and easy booking process</li>
+            <li>Events across multiple categories</li>
+            <li>Mobile-friendly and responsive design</li>
+            <li>Friendly customer support team</li>
+        </ul>
+    </div>
+
+    <!-- Meet the Team -->
+    <div class="section">
+        <h2>Meet the Team</h2>
+        <div class="team-grid">
+            <div class="team-member">
+                <img src="" alt="Meet Rathod">
+                <h4>Meet Rathod</h4>
+                <p>Founder & CEO</p>
+            </div>
+           
+            <div class="team-member">
+                <img src="" alt="Krushant Mulani">
+                <h4>Krushant Mulani</h4>
+                <p>Co-Founder</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="cta-section">
+        <a href="{% url 'all_events' %}" class="cta-btn">Browse Events</a>
+    </div>
+</div>
+
+{% endblock %}

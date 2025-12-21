@@ -1,0 +1,307 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content_title %}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* ================= ROOT ================= */
+    :root {
+        --accent: #ff9800;
+        --accent-soft: #ffb74d;
+        --bg-dark: #050505;
+        --card-dark: #111;
+        --text-light: #f5f5f5;
+        --sidebar-width: 230px;
+        --header-height: 52px;
+    }
+
+    /* ================= GLOBAL ================= */
+    body {
+        background: radial-gradient(circle at top, #1c1008, #050505 45%);
+        color: var(--text-light);
+    }
+
+    /* ================= HEADER ================= */
+    #header {
+        background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+        height: var(--header-height);
+        display: flex;
+        align-items: center;
+    }
+
+    #branding h1 a {
+        color: #1b1308 !important;
+        font-weight: 800;
+        letter-spacing: .08em;
+        font-size: 17px;
+    }
+
+    /* ================= CONTENT ================= */
+    #content {
+        padding: 22px 16px 40px calc(var(--sidebar-width) + 20px);
+        min-height: calc(100vh - var(--header-height));
+    }
+
+    #content-main {
+        max-width: none !important;
+    }
+
+    /* Hide default Django clutter */
+    #nav-sidebar,
+    .toggle-nav-sidebar,
+    .breadcrumbs,
+    #content h1,
+    #content-header {
+        display: none !important;
+    }
+
+    /* ================= SIDEBAR ================= */
+    .eh-sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        bottom: 0;
+        width: var(--sidebar-width);
+        background: #050506;
+        border-right: 1px solid #2b1a12;
+        padding: 18px 14px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        z-index: 21;
+        transition: transform .3s ease;
+    }
+
+    .eh-logo {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .eh-logo-badge {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #ffe082, #ff9800 60%);
+        display: grid;
+        place-items: center;
+        font-weight: 800;
+        color: #1b1308;
+    }
+
+    .eh-nav {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .eh-nav a {
+        display: flex;
+        gap: 10px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        text-decoration: none;
+        color: #d7cab9;
+        font-size: 13px;
+    }
+
+    .eh-nav a:hover,
+    .eh-nav a.active {
+        background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+        color: #1b1308;
+    }
+
+    /* ================= MOBILE TOP BAR ================= */
+    .eh-mobile-bar {
+        display: none;
+        position: fixed;
+        top: var(--header-height);
+        left: 0;
+        right: 0;
+        height: 46px;
+        background: #050506;
+        border-bottom: 1px solid #2b1a12;
+        z-index: 20;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 14px;
+    }
+
+    .eh-hamburger {
+        font-size: 22px;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    /* ================= OVERLAY ================= */
+    .eh-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, .65);
+        z-index: 19;
+    }
+
+    /* ================= LIST PAGES ================= */
+    .change-list .module {
+        background: var(--bg-dark);
+        border-radius: 14px;
+        border: 1px solid #2b1a12;
+    }
+
+    /* ================= RESPONSIVE ================= */
+    @media (max-width: 1100px) {
+
+        .eh-sidebar {
+            transform: translateX(-100%);
+        }
+
+        .eh-sidebar.open {
+            transform: translateX(0);
+        }
+
+        .eh-mobile-bar {
+            display: flex;
+        }
+
+        .eh-overlay.show {
+            display: block;
+        }
+
+        #content {
+            padding: 80px 14px 36px !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --header-height: 46px;
+        }
+
+        #branding h1 a {
+            font-size: 14px;
+        }
+
+        .change-list .results {
+            overflow-x: auto;
+        }
+
+        #result_list {
+            min-width: 700px;
+            font-size: 12px;
+        }
+    }
+
+    .eh-logout-btn {
+    width: 100%;
+    border: none;
+    background: linear-gradient(90deg, #ff9800, #ffb74d);
+    color: #1b1308;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.eh-logout-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(255,152,0,0.4);
+}
+
+.eh-logout-btn:active {
+    transform: translateY(0);
+}
+
+.eh-logout-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(255,152,0,0.5);
+}
+
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">EVENTHUB ADMIN</a>
+</h1>
+{% endblock %}
+
+{% block sidebar %}
+
+<!-- ========== MOBILE TOP BAR ========== -->
+<div class="eh-mobile-bar">
+    <div class="eh-hamburger" onclick="toggleSidebar()">☰</div>
+    <strong>EventHub Admin</strong>
+</div>
+
+<div class="eh-overlay" onclick="toggleSidebar()"></div>
+
+<!-- ========== SIDEBAR ========== -->
+<div class="eh-sidebar" id="ehSidebar">
+
+    <div class="eh-logo">
+        <div class="eh-logo-badge">E</div>
+        <div>
+            <strong>EventHub</strong><br>
+            <small>Admin Panel</small>
+        </div>
+    </div>
+
+    <ul class="eh-nav">
+        {% with v=request.resolver_match.url_name %}
+        <li>
+            <a href="{% url 'admin:index' %}" class="{% if v == 'index' %}active{% endif %}">
+                🏠 Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:user_event_changelist' %}" class="{% if 'user_event' in v %}active{% endif %}">
+                🎫 Events
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:user_booking_changelist' %}" class="{% if 'user_booking' in v %}active{% endif %}">
+                🧾 Bookings
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:user_profile_changelist' %}" class="{% if 'user_profile' in v %}active{% endif %}">
+                👥 Users
+            </a>
+        </li>
+        {% endwith %}
+    </ul>
+
+    <div style="margin-top:auto">
+        <form action="{% url 'admin:logout' %}" method="post" style="margin:0;">
+            {% csrf_token %}
+            <button type="submit" class="eh-logout-btn">
+                🚪 Logout
+            </button>
+        </form>
+
+
+        <div style="margin-top:10px;font-size:11px;color:#9c8a75;text-align:center">
+            {{ request.user.username }}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("ehSidebar");
+        const overlay = document.querySelector(".eh-overlay");
+
+        sidebar.classList.toggle("open");
+        overlay.classList.toggle("show");
+    }
+</script>
+{% endblock %}

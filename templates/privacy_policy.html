@@ -1,0 +1,147 @@
+{% extends "nav.html" %}
+
+{% block title %}Privacy Policy | EventHub{% endblock %}
+
+{% block content %}
+
+<style>
+/* ================= PAGE WRAPPER ================= */
+.policy-wrapper {
+    max-width: 900px;
+    margin: auto;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    border-radius: 18px;
+    padding: 32px 28px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.6);
+}
+
+/* ================= HEADINGS ================= */
+.policy-wrapper h1 {
+    font-weight: 800;
+    text-align: center;
+}
+.policy-wrapper h4 {
+    margin-top: 1.6rem;
+    font-weight: 700;
+}
+
+/* ================= TEXT ================= */
+.policy-wrapper p,
+.policy-wrapper li {
+    color: #d0d0d0;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+/* ================= BACK BUTTON ================= */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(90deg, #ff9800, #ffb74d);
+    color: #1b1308;
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    text-decoration: none;
+    transition: 0.25s ease;
+}
+.back-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255,165,0,0.6);
+    color: #1b1308;
+}
+
+/* ================= FOOT NOTE ================= */
+.policy-footer {
+    margin-top: 2rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #aaa;
+}
+
+/* ================= MOBILE ================= */
+@media (max-width: 576px) {
+    .policy-wrapper {
+        padding: 22px 18px;
+    }
+}
+</style>
+
+<div class="container my-5">
+    <div class="policy-wrapper text-light">
+
+        <!-- BACK BUTTON -->
+        <div class="mb-4">
+            <a href="{% url 'home' %}" class="back-btn">
+                ⬅ Back to Home
+            </a>
+        </div>
+
+        <h1 class="mb-4">Privacy Policy</h1>
+
+        <p>
+            At <strong>EventHub</strong>, we respect your privacy and are committed to
+            protecting the personal information you share with us.
+        </p>
+
+        <h4>1. Information We Collect</h4>
+        <ul>
+            <li>Personal details such as name, email address, and phone number</li>
+            <li>Event booking and ticket purchase information</li>
+            <li>Login and authentication data</li>
+        </ul>
+
+        <h4>2. How We Use Your Information</h4>
+        <ul>
+            <li>To manage event registrations and ticket bookings</li>
+            <li>To communicate important updates related to events</li>
+            <li>To improve user experience and platform functionality</li>
+        </ul>
+
+        <h4>3. Data Security</h4>
+        <p>
+            We use industry-standard security measures to protect your data.
+            However, no method of transmission over the internet is 100% secure.
+        </p>
+
+        <h4>4. Sharing of Information</h4>
+        <p>
+            EventHub does <strong>not sell or rent</strong> your personal information
+            to third parties. Data may be shared only when required by law
+            or for payment processing.
+        </p>
+
+        <h4>5. Cookies</h4>
+        <p>
+            We use cookies to enhance site functionality and improve your experience.
+            You can disable cookies in your browser settings.
+        </p>
+
+        <h4>6. Your Rights</h4>
+        <p>
+            You have the right to access, update, or request deletion of your
+            personal information by contacting us.
+        </p>
+
+        <h4>7. Changes to This Policy</h4>
+        <p>
+            EventHub may update this Privacy Policy from time to time.
+            Changes will be posted on this page.
+        </p>
+
+        <h4>8. Contact Us</h4>
+        <p>
+            If you have any questions about this Privacy Policy,
+            please contact us at <strong>support@eventhub.com</strong>.
+        </p>
+
+        <div class="policy-footer">
+            Last updated: {{ now|default:"2025" }}
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

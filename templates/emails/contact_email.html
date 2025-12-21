@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>EventHub - New Contact Message</title>
+    <style>
+      body { 
+        font-family: Arial, sans-serif; 
+        background: #111; 
+        padding: 20px; 
+      }
+      .container { 
+        background: #ffffff; 
+        border-radius: 10px; 
+        padding: 20px; 
+        max-width: 600px; 
+        margin: auto; 
+        box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
+      }
+      .header { 
+        background: #ff9800; 
+        color: white; 
+        padding: 15px; 
+        text-align: center; 
+        border-radius: 10px 10px 0 0; 
+        font-size: 20px; 
+        font-weight: bold; 
+      }
+      .content { 
+        margin: 20px 0; 
+        font-size: 16px; 
+        color: #333; 
+      }
+      .info-box {
+        background: #fff4e5;
+        border-left: 4px solid #ff9800;
+        padding: 15px;
+        margin: 20px 0;
+        border-radius: 8px;
+      }
+      .btn { 
+        display: inline-block; 
+        padding: 12px 20px; 
+        background: #ff9800; 
+        color: white; 
+        text-decoration: none; 
+        border-radius: 5px; 
+        font-weight: bold; 
+      }
+      .btn:hover { 
+        background: #e68900; 
+      }
+      .footer { 
+        text-align: center; 
+        font-size: 12px; 
+        color: #aaa; 
+        margin-top: 20px; 
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">📬 EventHub Contact Message</div>
+      <div class="content">
+        <p><b>From:</b> {{ name }}</p>
+        <p><b>Email:</b> {{ email }}</p>
+        <div class="info-box">
+          <p><b>Message:</b></p>
+          <p>{{ message }}</p>
+        </div>
+        <p style="text-align:center; margin-top: 25px;">
+          <a href="https://eventhub-project.onrender.com/" class="btn">Visit EventHub</a>
+        </p>
+      </div>
+      <div class="footer">
+        <p>&copy; 2025 EventHub | Discover Exciting Events</p>
+      </div>
+    </div>
+  </body>
+</html>

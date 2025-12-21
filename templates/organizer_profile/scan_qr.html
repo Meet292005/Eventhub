@@ -1,0 +1,59 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4 text-center">
+    <h3 class="text-warning">📷 Scan Ticket QR for "{{ event.title }}"</h3>
+    <p class="text-muted">
+        Point your camera at a customer’s QR ticket. If valid, they’ll be marked as attended automatically.
+    </p>
+
+    <!-- QR Scanner UI -->
+    <div id="qr-reader" style="width:100%; max-width:500px; margin:auto; border:2px solid #ffc107; border-radius:10px;"></div>
+    <div id="qr-result" class="mt-3 text-success fw-bold"></div>
+    <div id="qr-error" class="mt-3 text-danger fw-bold"></div>
+</div>
+
+<!-- ✅ QR Code Scanner Library -->
+<script src="https://cdn.jsdelivr.net/npm/html5-qrcode/minified/html5-qrcode.min.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const resultDiv = document.getElementById("qr-result");
+    const errorDiv = document.getElementById("qr-error");
+
+    function onScanSuccess(decodedText, decodedResult) {
+        resultDiv.innerText = "✅ QR scanned! Redirecting...";
+        errorDiv.innerText = ""; // clear errors
+        console.log("Decoded QR:", decodedText);
+
+        // Redirect to your backend verification URL
+        window.location.href = "{% url 'verify_ticket' %}?code=" + encodeURIComponent(decodedText);
+    }
+
+    function onScanError(errorMessage) {
+        // Show live scanning errors only if needed
+        console.warn("QR scan error:", errorMessage);
+    }
+
+    try {
+        let html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: 250 },
+            false
+        );
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    } catch (err) {
+        console.error("Camera initialization failed:", err);
+        if (err.name === "NotAllowedError") {
+            errorDiv.innerText = "❌ Camera access was denied. Please allow camera permissions.";
+        } else if (err.name === "NotFoundError") {
+            errorDiv.innerText = "❌ No camera found. Please connect a webcam or use a device with a camera.";
+        } else if (err.name === "NotReadableError") {
+            errorDiv.innerText = "❌ Camera is already in use by another app. Close other apps and retry.";
+        } else {
+            errorDiv.innerText = "❌ Unable to access camera: " + err.message;
+        }
+    }
+});
+</script>
+{% endblock %}

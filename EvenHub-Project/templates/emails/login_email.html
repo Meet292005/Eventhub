@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>EventHub Login Notification</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #fff8f0;
+      margin: 0;
+      padding: 0;
+    }
+    .email-container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #ff9800, #e67e22);
+      padding: 25px;
+      text-align: center;
+      color: #fff;
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+    .content {
+      padding: 25px;
+      color: #333;
+      line-height: 1.6;
+    }
+    .content h2 {
+      color: #e67e22;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+    .info-box {
+      background: #fff4e5;
+      border-left: 4px solid #ff9800;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+    .button {
+      display: inline-block;
+      margin: 20px 0;
+      padding: 12px 25px;
+      background: #ff9800;
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    .button:hover {
+      background: #e67e22;
+    }
+    .footer {
+      font-size: 13px;
+      color: #777;
+      padding: 20px;
+      text-align: center;
+      border-top: 1px solid #eee;
+      background: #fffaf3;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="header">
+      <h1>EventHub Login Successful</h1>
+    </div>
+    <div class="content">
+      <h2>Hello {{ username }} 👋</h2>
+      <p>You’ve successfully logged in to your <strong>EventHub</strong> account.</p>
+
+      <div class="info-box">
+        <p>✅ Your account is safe and active.</p>
+        <p>🔒 If this wasn’t you, please reset your password immediately.</p>
+        <p>⚙️ You can manage your account anytime from your dashboard.</p>
+      </div>
+
+      <a href="https://evenhub-project.onrender.com" class="button">Go to EventHub</a>
+    </div>
+    <div class="footer">
+      <p>Thank you for being part of EventHub 🎉</p>
+      <p>&copy; 2025 EventHub. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

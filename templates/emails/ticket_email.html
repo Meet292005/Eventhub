@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Your Ticket - {{ event.title }}</title>
+</head>
+
+<body style="font-family: Arial, sans-serif; background:#f9f9f9; padding:20px;">
+    <div
+        style="max-width:600px; margin:auto; background:#fff; border:1px solid #ddd; border-radius:10px; overflow:hidden;">
+
+        <!-- Banner -->
+        <div style="background:linear-gradient(135deg,#FFA500,#FF7300); color:#fff; padding:20px; text-align:center;">
+            <h2>{{ event.title }}</h2>
+            <p>{{ event.date|date:"d M, Y" }} | {{ event.time|time:"h:i A" }}</p>
+            <p><strong>Location:</strong> {{ event.location }}</p>
+        </div>
+
+        <!-- Ticket Info -->
+        <div style="padding:20px; color:#333;">
+            <p><strong>Booking Name:</strong> {{ booking.booking_name }}</p>
+            <p><strong>Booking ID:</strong> {{ booking.id }}</p>
+            <p><strong>Tickets:</strong> {{ booking.tickets_booked }}</p>
+            <p><strong>Amount Paid:</strong> ₹ {% if event.price == 0 %}
+                Free
+                {% else %}
+                ₹ {{ booking.total_price }}
+                {% endif %}</p>
+            <p><strong>Status:</strong> ✅ PAID</p>
+            <p><strong>Organizer:</strong> {{ event.organizer.organization_name|default:event.organizer.user.username }}
+            </p>
+            <p><strong>Contact:</strong>
+                {{ event.organizer.user.email|default:"No email" }} |
+                {{ event.organizer.phone|default:"No phone" }}
+            </p>
+        </div>
+
+        <!-- QR -->
+        <div style="text-align:center; padding:20px;">
+            {% if qr_code %}
+            <img src="cid:qr_code" alt="QR Code" width="200" height="200" />
+            <p style="color:#555; font-size:12px;">Scan this QR to verify your ticket</p>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div style="background:#f1f1f1; padding:15px; text-align:center; font-size:12px; color:#555;">
+            <p>* Please carry a valid ID with this ticket. Terms & Conditions apply.</p>
+            <p>Thank you for booking with <strong>EventHub</strong> 🎉</p>
+        </div>
+    </div>
+</body>
+
+</html>

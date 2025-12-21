@@ -1,0 +1,373 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list admin_urls i18n %}
+
+{# ---------- Extra CSS only for Event changelist ---------- #}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Outer shell to center grid & Add button */
+        .eh-event-grid-shell,
+        .eh-object-tools-shell {
+            max-width: 1320px;
+            margin: 16px auto 0;
+            padding: 0 4px;
+        }
+
+        .eh-object-tools-shell {
+            display: flex;
+            justify-content: flex-end;   /* Add button on right inside shell */
+            margin-top: 10px;
+            margin-bottom: 4px;
+        }
+
+        .eh-object-tools-shell .object-tools {
+            float: none;                 /* cancel default float */
+            margin: 0;
+        }
+
+        /* Grid wrapper */
+        .eh-event-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+            gap: 24px;   /* space between cards */
+            margin-bottom: 18px;
+        }
+
+        .eh-event-card {
+            background: radial-gradient(circle at top,
+                        rgba(34, 19, 11, 0.95) 0,
+                        #050505 55%);
+            border-radius: 20px;
+            border: 1px solid #2b1a12;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+            padding: 18px 18px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.18s ease,
+                        box-shadow 0.18s ease,
+                        border-color 0.18s ease;
+        }
+
+        /* subtle glow overlay */
+        .eh-event-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(135deg,
+                        rgba(255,152,0,0.45),
+                        transparent 45%,
+                        rgba(255,183,77,0.35));
+            opacity: 0.22;
+            pointer-events: none;
+        }
+
+        /* hover lift */
+        .eh-event-card:hover {
+            transform: translateY(-4px) scale(1.01);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
+            border-color: #ff9800;
+        }
+
+        .eh-event-card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .eh-event-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .eh-event-main {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex: 1;
+        }
+
+        .eh-event-select input[type="checkbox"] {
+            transform: scale(1.1);
+            cursor: pointer;
+            margin-top: 3px;
+        }
+
+        .eh-event-title a {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: 0.01em;
+            color: #ffd28a;
+            text-decoration: none;
+        }
+
+        .eh-event-title a:hover {
+            color: #ffe082;
+            text-decoration: underline;
+        }
+
+        .eh-event-organizer {
+            font-size: 11px;
+            color: #9c8a75;
+        }
+
+        .eh-event-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-top: 4px;
+        }
+
+        .eh-chip {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 999px;
+            border: 1px solid #2b1a12;
+            background: rgba(255, 152, 0, 0.08);
+            color: #ffb74d;
+            white-space: nowrap;
+        }
+
+        .eh-chip-muted {
+            background: rgba(255, 255, 255, 0.02);
+            color: #9c8a75;
+            border-color: #22150f;
+        }
+
+        .eh-status-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(0, 150, 136, 0.12);
+            color: #80cbc4;
+            border: 1px solid rgba(0, 150, 136, 0.55);
+            white-space: nowrap;
+        }
+
+        .eh-status-full {
+            background: rgba(244, 67, 54, 0.12);
+            color: #ef9a9a;
+            border-color: rgba(244, 67, 54, 0.6);
+        }
+
+        .eh-status-deadline {
+            background: rgba(255, 193, 7, 0.10);
+            color: #ffe082;
+            border-color: rgba(255, 193, 7, 0.7);
+        }
+
+        .eh-event-meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 14px;
+            font-size: 11px;
+            color: #b0a290;
+            margin-top: 4px;
+        }
+
+        .eh-event-meta-row div {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .eh-label {
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #7a6a58;
+        }
+
+        .eh-value-strong {
+            font-size: 12px;
+            font-weight: 600;
+            color: #e6d5c2;
+        }
+
+        .eh-event-footer {
+            margin-top: 8px;
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            font-size: 11px;
+            color: #7a6a58;
+        }
+
+        .eh-money {
+            color: #ffb74d;
+            font-weight: 600;
+        }
+
+        /* at small widths make grid 1-column */
+        @media (max-width: 800px) {
+            .eh-event-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{# ---------- Align Add button with cards ---------- #}
+{% block object-tools %}
+    {% if has_add_permission %}
+        <div class="eh-object-tools-shell">
+            <ul class="object-tools">
+                <li>
+                    <a href="{% url cl.opts|admin_urlname:'add' %}" class="addlink">
+                        {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# ---------- Replace only the object list with cards ---------- #}
+{% block result_list %}
+    {# Safety: if list_editable is used, fall back to default table #}
+    {% if cl.formset %}
+        {{ block.super }}
+    {% else %}
+        {# top bulk actions #}
+        {% if action_form and actions_on_top and cl.full_result_count %}
+            {% admin_actions %}
+        {% endif %}
+
+        <div class="eh-event-grid-shell">
+            <div class="eh-event-grid">
+                {% for obj in cl.result_list %}
+                    <div class="eh-event-card">
+                        <div class="eh-event-card-inner">
+
+                            <div class="eh-event-card-header">
+                                <div class="eh-event-main">
+                                    <label class="eh-event-select">
+                                        <input type="checkbox"
+                                               name="_selected_action"
+                                               value="{{ obj.pk|admin_urlquote }}">
+                                    </label>
+
+                                    <div>
+                                        <div class="eh-event-title">
+                                            <a href="{% url cl.opts|admin_urlname:'change' obj.pk|admin_urlquote %}">
+                                                {{ obj.title }}
+                                            </a>
+                                        </div>
+                                        <div class="eh-event-organizer">
+                                            {% if obj.organizer %}
+                                                {{ obj.organizer.organization_name|default:obj.organizer.user.username }}
+                                            {% else %}
+                                                —
+                                            {% endif %}
+                                        </div>
+
+                                        <div class="eh-event-chip-row">
+                                            <span class="eh-chip">
+                                                {{ obj.get_category_display }}
+                                            </span>
+
+                                            {% if obj.duration %}
+                                                <span class="eh-chip-muted">
+                                                    ⏱ {{ obj.duration }}
+                                                </span>
+                                            {% endif %}
+
+                                            {% if obj.date %}
+                                                <span class="eh-chip-muted">
+                                                    📅 {{ obj.date|date:"d M Y" }}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {# status badge: Full / Seats left / Deadline #}
+                                {% with seats=obj.available_seats %}
+                                    {% if obj.is_full %}
+                                        <div class="eh-status-badge eh-status-full">
+                                            FULL
+                                        </div>
+                                    {% elif obj.registration_deadline and obj.registration_deadline < today %}
+                                        <div class="eh-status-badge eh-status-deadline">
+                                            Deadline Passed
+                                        </div>
+                                    {% else %}
+                                        <div class="eh-status-badge">
+                                            {{ seats }} left
+                                        </div>
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+
+                            <div class="eh-event-meta-row">
+                                <div>
+                                    <div class="eh-label">Time</div>
+                                    <div class="eh-value-strong">
+                                        {% if obj.time %}
+                                            {{ obj.time|time:"H:i" }}
+                                            {% if obj.end_time %} – {{ obj.end_time|time:"H:i" }}{% endif %}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="eh-label">Location</div>
+                                    <div class="eh-value-strong">
+                                        {{ obj.location|truncatechars:22 }}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="eh-label">Capacity</div>
+                                    <div class="eh-value-strong">
+                                        {{ obj.total_registrations }} / {{ obj.capacity }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="eh-event-footer">
+                                <div>
+                                    <span class="eh-label">Price</span><br>
+                                    {% if obj.price == 0 %}
+                                        <span class="eh-money">Free</span>
+                                    {% else %}
+                                        <span class="eh-money">₹{{ obj.price }}</span>
+                                    {% endif %}
+                                </div>
+
+                                {% if obj.registration_deadline %}
+                                    <div>
+                                        <span class="eh-label">Registration till</span><br>
+                                        {{ obj.registration_deadline|date:"d M Y" }}
+                                    </div>
+                                {% endif %}
+
+                                <div>
+                                    <span class="eh-label">Created</span><br>
+                                    {{ obj.created_at|date:"d M Y" }}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>{% trans "No events available." %}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# bottom bulk actions #}
+        {% if action_form and actions_on_bottom and cl.full_result_count %}
+            {% admin_actions %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; color: #333; }
+    .container { max-width: 500px; margin: auto; background: #fff; padding: 20px;
+                 border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    h2 { color: #f06e00; }
+    .otp { font-size: 24px; font-weight: bold; color: #0f012b; margin: 20px 0; }
+    .footer { margin-top: 20px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Password Reset Request</h2>
+    <p>Hi {{ username }},</p>
+    <p>We received a request to reset your EventHub account password.</p>
+    <p>Your OTP is:</p>
+    <p class="otp">{{ otp }}</p>
+    <p>If you didn’t request this, you can safely ignore this email.</p>
+    <div class="footer">
+      &copy; 2025 EventHub. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,101 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<style>
+  .event-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center; /* center items even if only 1 or 2 */
+    margin-top: 20px;
+  }
+
+  .event-card {
+    background-color: #1e1e1e;
+    border-radius: 15px;
+    padding: 20px;
+    width: 300px; /* consistent fixed width */
+    box-shadow: 0 4px 12px rgba(255, 165, 0, 0.2);
+    transition: transform 0.3s ease;
+  }
+
+  .event-card:hover {
+    transform: scale(1.02);
+  }
+
+  .event-banner {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(255, 165, 0, 0.3);
+  }
+
+  .event-card h5 {
+    color: orange;
+    margin-bottom: 10px;
+  }
+
+  .event-card p {
+    margin: 0 0 8px;
+    color: #ddd;
+  }
+
+  .btn-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 15px;
+  }
+
+  .btn-edit, .btn-delete {
+    flex: 1;
+    background-color: orange;
+    color: black;
+    font-weight: bold;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-align: center;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .btn-edit:hover, .btn-delete:hover {
+    background-color: #ff8800;
+  }
+
+  .btn-delete-form {
+    flex: 1;
+  }
+</style>
+
+<h2 class="text-center mb-4">🗂️ Your Events</h2>
+
+<div class="event-grid">
+  {% for event in events %}
+    <div class="event-card">
+      {% if event.banner %}
+        <img src="{{ event.banner.url }}" alt="{{ event.title }}" class="event-banner">
+      {% else %}
+        <img src="/media/default_banner.jpg" alt="Default Banner" class="event-banner">
+      {% endif %}
+      <h5>{{ event.title }}</h5>
+      <p><strong>Date:</strong> {{ event.date }}</p>
+      <p><strong>Venue:</strong> {{ event.location }}</p>
+
+      <div class="btn-group">
+        <a href="{% url 'update_event' event.id %}" class="btn-edit">✏️ Edit</a>
+       <a href="{% url 'confirm_delete_event' event.id %}" class="btn-delete">🗑️ Delete</a>
+      </div>
+    </div>
+  {% empty %}
+    <div style="color: #aaa; text-align: center; width: 100%; font-size: 18px; padding: 40px;">
+      You haven't created any events yet.
+    </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

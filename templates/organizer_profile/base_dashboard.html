@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | EventHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: #121212;
+      color: white;
+    }
+
+    .sidebar {
+      background: #1a1a1a;
+      padding: 1rem;
+    }
+
+    .nav-link {
+      color: white;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      display: block;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .nav-link:hover {
+      background: #ff6a00;
+      color: white;
+      transform: scale(1.03);
+    }
+
+    .nav-link.active {
+      background-color: #ff6a00;
+      color: white;
+      box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+    }
+
+    .nav-link.active.user-info-animate {
+      animation: pulse-glow 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 0 0 0px rgba(255, 140, 0, 0.5);
+      }
+
+      50% {
+        box-shadow: 0 0 12px rgba(255, 140, 0, 1);
+      }
+
+      100% {
+        box-shadow: 0 0 0px rgba(255, 140, 0, 0.5);
+      }
+    }
+
+    .logout-btn {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 0.5rem 1rem;
+      color: white;
+      background: none;
+      border: none;
+      font-weight: 500;
+      border-radius: 4px;
+      transition: background 0.3s ease, transform 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background-color: #ff6a00;
+      color: white;
+      transform: scale(1.03);
+    }
+
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      color: #ff6a00;
+      font-size: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      #sidebarMenu {
+        display: block !important;
+      }
+    }
+
+    .navbar-nav .nav-link {
+      color: white;
+      transition: color 0.3s ease, border-bottom 0.3s ease;
+    }
+
+    .navbar-nav .nav-link:hover {
+      color: orange;
+    }
+
+    .navbar-nav .nav-link.text-warning {
+      color: orange !important;
+    }
+
+    .navbar-nav .nav-link.border-warning {
+      border-bottom: 2px solid orange;
+    }
+
+    /* ===== Chat widget styles (same as EventHub Helper) ===== */
+    .eh-chat-launcher {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(180deg,#ffb347,#ffcc33);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+      z-index: 99999;
+      cursor: pointer;
+      border: 3px solid rgba(0,0,0,0.12);
+    }
+
+    .eh-chat-window {
+      position: fixed;
+      bottom: 100px;
+      right: 24px;
+      width: 360px;
+      max-width: calc(100% - 48px);
+      height: 520px;
+      background: linear-gradient(180deg, rgba(10,10,10,0.95), rgba(30,30,30,0.95));
+      border-radius: 12px;
+      overflow: hidden;
+      display: none;
+      flex-direction: column;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      z-index: 99999;
+    }
+
+    .eh-chat-header {
+      padding: 12px 14px;
+      background: rgba(0,0,0,0.55);
+      color: #ffd88a;
+      font-weight: 700;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    .eh-chat-header button {
+      background: transparent;
+      border: none;
+      color: #ffd88a;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .eh-chat-messages {
+      flex: 1;
+      padding: 12px;
+      overflow-y: auto;
+      font-size: 14px;
+      color: #e6eef6;
+      line-height: 1.45;
+      background: rgba(0,0,0,0.18);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .eh-chat-typing { display: none; padding: 8px 12px; font-size: 13px; color: #c0c0c0; display:flex; align-items:center; gap:8px; }
+    .typing-dots { display:inline-block; width:34px; text-align:left; }
+    .typing-dots span { display:inline-block; width:6px; height:6px; margin-right:4px; border-radius:50%; background:#ffd88a; opacity:0.25; animation:typing 1s infinite; }
+    .typing-dots span:nth-child(2){ animation-delay:0.15s }
+    .typing-dots span:nth-child(3){ animation-delay:0.3s }
+    @keyframes typing { 0%{opacity:0.3; transform:translateY(0)} 50%{opacity:1; transform:translateY(-4px)} 100%{opacity:0.3; transform:translateY(0)} }
+
+    .eh-chat-input { display:flex; gap:8px; padding: 10px; background: rgba(0,0,0,0.45); align-items:center; }
+    .eh-chat-input input[type="text"] { flex:1; padding: 9px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.02); color: #fff; outline: none; }
+    .eh-chat-input button { padding: 8px 12px; border-radius: 999px; border: none; background: orange; color: #000; font-weight: 700; cursor: pointer; }
+
+    .initial-bubble { padding: 10px; border-radius: 10px; background: linear-gradient(180deg,#0f1720,#162029); color: #e6f5ff; border:1px solid rgba(255,215,138,0.06); box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-width: 320px; }
+    .initial-bubble h4 { margin: 0 0 8px 0; color:#ffd88a; font-size:14px; }
+    .initial-bubble .item-list { list-style: none; padding: 0; margin: 0; display:flex; flex-direction: column; gap:8px; }
+    .initial-bubble .item-list li { display:flex; gap:8px; align-items:center; }
+    .initial-bubble .item-button {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.03);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .initial-bubble .item-button:hover { background: rgba(255,255,255,0.06); }
+    .initial-bubble .item-button.active { background: linear-gradient(90deg,#ffd89b,#ffb347); color:#000; border-color: rgba(0,0,0,0.08); }
+
+    .eh-chat-message { max-width: 90%; word-break: break-word; white-space: pre-wrap; }
+    .eh-chat-message .bubble { display: inline-block; padding: 10px 12px; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.6); }
+
+    .eh-chat-message.role-user { align-self: flex-end; text-align: right; }
+    .eh-chat-message.role-user .bubble { background: linear-gradient(90deg,#ffd89b,#ffb347); color: #000; border-bottom-right-radius: 4px; }
+
+    .eh-chat-message.role-bot { align-self: flex-start; text-align: left; }
+    .eh-chat-message.role-bot .bubble { background: linear-gradient(180deg,#0f1720,#162029); color: #e6f5ff; border-bottom-left-radius: 4px; border: 1px solid rgba(255,215,138,0.06); }
+
+    .eh-chat-message.role-bot .bubble .meta { display:block; color:#ffd88a; font-size:12px; font-weight:700; margin-bottom:6px; }
+    .eh-chat-message.role-bot .bubble p { margin: 0 0 6px 0; }
+    .eh-chat-message.role-bot .bubble pre { background: rgba(255,255,255,0.03); padding: 8px; border-radius: 8px; overflow: auto; margin: 6px 0; color:#e6f5ff; }
+    .eh-chat-message.role-bot .bubble a { color: #ffd88a; text-decoration: underline; }
+
+    .eh-chat-message.role-bot .bubble .first-line { font-weight:700; margin-bottom:6px; display:block; color:#ffd88a; }
+
+    .eh-quick-replies { display:none; }
+
+    @media (max-width: 540px) {
+      .eh-chat-window { right: 12px; left: 12px; width: auto; bottom: 84px; }
+      .eh-chat-launcher { right: 12px; bottom: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Mobile Header -->
+  <div class="d-md-none d-flex justify-content-between align-items-center p-3 border-bottom bg-dark">
+    <h4 class="text-warning mb-0">⭐ EventHub</h4>
+    <button class="sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+      aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      ☰
+    </button>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-md-3">
+        <div class="collapse d-md-block sidebar" id="sidebarMenu">
+          <h4 class="text-warning">Profile Menu</h4>
+          <br>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'organizer_profile' %}active user-info-animate{% endif %}"
+            href="{% url 'organizer_profile' %}">👤 Organizer Info</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'organizer_edit_profile' %}active{% endif %}"
+            href="{% url 'organizer_edit_profile' %}">📝 Edit Profile</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'create_event' %}active user-info-animate{% endif %}"
+            href="{% url 'create_event' %}">➕ Create Event</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'select_event_to_update' or request.resolver_match.url_name == 'update_event' or request.resolver_match.url_name == 'confirm_delete_event' %}active user-info-animate{% endif %}"
+            href="{% url 'select_event_to_update' %}"> ✏️ Update Event</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'event_list' or request.resolver_match.url_name == 'event_detail' %}active user-info-animate{% endif %}"
+            href="{% url 'event_list' %}">📋 Your Events</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'organizer_bookings' %}active{% endif %}"
+            href="{% url 'organizer_bookings' %}">📅 Bookings
+          </a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'organizer-reviews' %}active{% endif %}"
+          href="{% url 'organizer-reviews' %}"> ⭐ Reviews
+          </a>
+          
+          <a class="nav-link {% if request.resolver_match.url_name == 'verify_customers' or request.resolver_match.url_name == 'verify_event_customers' %}active user-info-animate{% endif %}"
+            href="{% url 'verify_customers' %}">
+            ✅ Verify Customers
+          </a>
+          <a class="nav-link {% if request.resolver_match.url_name == 'scan_qr_dashboard' or request.resolver_match.url_name == 'verify_ticket_qr' or 'scan-qr' in request.path %}active user-info-animate{% endif %}"
+   href="{% url 'scan_qr_dashboard' %}">
+   📷 Scan QR
+</a>
+
+          <!-- Logout -->
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">🚪 Logout</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="col-md-9 p-4">
+        {% if messages %}
+        <div class="container mt-3">
+          {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <!-- CHAT WIDGET: launcher + window -->
+  <div id="eh-chat-launcher" class="eh-chat-launcher" title="Open EventHub Helper" aria-label="Open chat">
+    <i class="fa-solid fa-comment-dots" style="font-size:20px; color:#000;"></i>
+  </div>
+
+  <div id="eh-chat-window" class="eh-chat-window" role="dialog" aria-label="EventHub Helper" aria-hidden="true">
+    <div class="eh-chat-header">
+      <div>EventHub Helper</div>
+      <div>
+        <button id="eh-chat-minimize-btn" title="Minimize">—</button>
+        <button id="eh-chat-close-btn" title="Close">✕</button>
+      </div>
+    </div>
+
+    <div id="eh-chat-messages" class="eh-chat-messages" aria-live="polite" role="log"></div>
+
+    <!-- Typing indicator -->
+    <div id="eh-chat-typing" class="eh-chat-typing" aria-hidden="true">
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <div class="typing-text">EventHub Helper is typing…</div>
+    </div>
+
+    <div id="eh-quick-replies" class="eh-quick-replies" aria-hidden="true"></div>
+
+    <div class="eh-chat-input">
+      <input id="eh-chat-input" type="text" placeholder="Ask something about EventHub..." aria-label="Ask EventHub">
+      <button id="eh-chat-send-btn" type="button">Send</button>
+    </div>
+  </div>
+
+  <!-- Chat widget script -->
+  <script>
+  (function () {
+    // <-- change this to your chat webhook / assistant endpoint if needed -->
+    const N8N_CHAT_URL = "https://n8n-4-eg2v.onrender.com/webhook/db87e4c3-5587-4e9e-b0b8-7ac60b15ccd8/chat";
+    const launcher = document.getElementById("eh-chat-launcher");
+    const windowEl = document.getElementById("eh-chat-window");
+    const closeBtn = document.getElementById("eh-chat-close-btn");
+    const minimizeBtn = document.getElementById("eh-chat-minimize-btn");
+    const messagesEl = document.getElementById("eh-chat-messages");
+    const typingEl = document.getElementById("eh-chat-typing");
+    const inputEl = document.getElementById("eh-chat-input");
+    const sendBtn = document.getElementById("eh-chat-send-btn");
+
+    const ASSISTANT_NAME = "EventHub Helper";
+    const sessionId = ((window.crypto && crypto.randomUUID && crypto.randomUUID()) || ("session-" + Date.now()));
+
+    const PREDEFINED = [
+      "Show upcoming events",
+      "How do I cancel a ticket?",
+      "My tickets aren't showing",
+      "Event categories",
+      "Contact support"
+    ];
+
+    let libsLoaded = false;
+    let firstOpen = true;
+    let currentRequestAbortController = null;
+
+    function loadLib(url) {
+      return new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = url;
+        s.onload = res;
+        s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    async function ensureLibs() {
+      if (libsLoaded) return;
+      await loadLib('https://cdn.jsdelivr.net/npm/marked/marked.min.js').catch(()=>{});
+      await loadLib('https://cdn.jsdelivr.net/npm/dompurify@2.4.0/dist/purify.min.js').catch(()=>{});
+      libsLoaded = true;
+    }
+
+    function escapeHtml(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function scrollToBottom(smooth = true) {
+      try {
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (!smooth || prefersReduced) messagesEl.scrollTop = messagesEl.scrollHeight;
+        else messagesEl.scrollTo({ top: messagesEl.scrollHeight, behavior: 'smooth' });
+      } catch (e) { messagesEl.scrollTop = messagesEl.scrollHeight; }
+    }
+
+    function appendUserMessage(text) {
+      if (!messagesEl) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'eh-chat-message role-user';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      bubble.textContent = text;
+      wrapper.appendChild(bubble);
+      messagesEl.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function appendInitialClickableList() {
+      if (!messagesEl) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'eh-chat-message role-bot';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble initial-bubble';
+
+      const h = document.createElement('h4');
+      h.textContent = 'Here are some things I can help with:';
+      bubble.appendChild(h);
+
+      const ul = document.createElement('ul');
+      ul.className = 'item-list';
+      PREDEFINED.forEach((q) => {
+        const li = document.createElement('li');
+
+        const label = document.createElement('div');
+        label.style.flex = '1';
+        label.style.color = '#e6f5ff';
+        label.style.fontSize = '13px';
+        label.textContent = q;
+
+        const btn = document.createElement('button');
+        btn.className = 'item-button';
+        btn.textContent = 'Ask';
+        btn.setAttribute('data-q', q);
+        btn.addEventListener('click', (ev) => {
+          document.querySelectorAll('.item-button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          choosePredefined(q, btn);
+        });
+
+        li.appendChild(label);
+        li.appendChild(btn);
+        ul.appendChild(li);
+      });
+
+      bubble.appendChild(ul);
+      wrapper.appendChild(bubble);
+      messagesEl.appendChild(wrapper);
+      scrollToBottom(false);
+    }
+
+    function appendBotMessage(raw) {
+      if (!messagesEl) return;
+      const wrapper = document.createElement('div');
+      wrapper.className = 'eh-chat-message role-bot';
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+
+      raw = String(raw || '').trim();
+      if (!raw) raw = 'No reply';
+
+      const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l !== '');
+      const first = lines.shift() || '';
+      let inner = `<span class="meta">${ASSISTANT_NAME}</span>`;
+      inner += `<span class="first-line">${escapeHtml(first)}</span>`;
+
+      if (lines.length) {
+        const looksLikeList = lines.every(l => /^(-|\*|\d+\.)\s+/.test(l));
+        if (looksLikeList) {
+          inner += '<ul>';
+          lines.forEach(l => {
+            const item = l.replace(/^(-|\*|\d+\.)\s+/, '');
+            inner += `<li>${escapeHtml(item)}</li>`;
+          });
+          inner += '</ul>';
+        } else {
+          lines.forEach(p => inner += `<p>${escapeHtml(p)}</p>`);
+        }
+      }
+
+      if (window.marked && window.DOMPurify) {
+        try {
+          const md = marked.parse(inner);
+          bubble.innerHTML = DOMPurify.sanitize(md);
+        } catch (e) {
+          bubble.innerHTML = inner;
+        }
+      } else {
+        bubble.innerHTML = inner;
+      }
+
+      wrapper.appendChild(bubble);
+      messagesEl.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function setTyping(show) {
+      if (!typingEl) return;
+      typingEl.style.display = show ? 'flex' : 'none';
+      typingEl.setAttribute('aria-hidden', show ? 'false' : 'true');
+      if (show) scrollToBottom();
+    }
+
+    async function choosePredefined(q, btnEl) {
+      appendUserMessage(q);
+      setTyping(true);
+      if (btnEl) btnEl.disabled = true;
+
+      try {
+        if (currentRequestAbortController) currentRequestAbortController.abort();
+        currentRequestAbortController = new AbortController();
+        const signal = currentRequestAbortController.signal;
+
+        const payload = { sessionId, chatInput: q };
+        const res = await fetch(N8N_CHAT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+          signal
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>'');
+          throw new Error(`n8n ${res.status}: ${txt}`);
+        }
+
+        const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+        let data;
+        if (ct.includes('application/json')) data = await res.json();
+        else {
+          const txt = await res.text();
+          try { data = JSON.parse(txt); } catch (e) { data = txt; }
+        }
+
+        const reply = extractReply(data) || 'No reply from assistant.';
+        await ensureLibs().catch(()=>{});
+        appendBotMessage(reply);
+      } catch (err) {
+        if (err.name === 'AbortError') appendBotMessage('Previous request canceled.');
+        else {
+          console.error(err);
+          const msg = (err.message && err.message.length) ? `Sorry — couldn't reach assistant (${escapeHtml(String(err.message))})` : "Sorry — couldn't reach assistant.";
+          appendBotMessage(msg);
+        }
+      } finally {
+        setTyping(false);
+        if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('active'); }
+        currentRequestAbortController = null;
+      }
+    }
+
+    function extractReply(data) {
+      if (!data) return null;
+      if (typeof data === 'string') return data;
+      if (Array.isArray(data)) {
+        if (data.length === 0) return null;
+        const first = data[0];
+        if (typeof first === 'string') return first;
+        if (first.text || first.reply) return first.text || first.reply;
+        return JSON.stringify(data);
+      }
+      const keys = ['reply','text','answer','output','message','result'];
+      for (const k of keys) {
+        if (data[k]) {
+          if (k === 'result' && Array.isArray(data.result) && data.result[0]) {
+            const r = data.result[0];
+            return r.text || r.reply || JSON.stringify(r);
+          }
+          return data[k];
+        }
+      }
+      try { if (data[0] && (data[0].text || data[0].reply)) return data[0].text || data[0].reply; } catch(e){}
+      return JSON.stringify(data);
+    }
+
+    async function sendTypedMessage() {
+      const msg = inputEl.value.trim();
+      if (!msg) return;
+      appendUserMessage(msg);
+      inputEl.value = '';
+      setTyping(true);
+
+      try {
+        if (currentRequestAbortController) currentRequestAbortController.abort();
+        currentRequestAbortController = new AbortController();
+        const signal = currentRequestAbortController.signal;
+
+        const payload = { sessionId, chatInput: msg };
+        const res = await fetch(N8N_CHAT_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify(payload),
+          signal
+        });
+
+        if (!res.ok) {
+          const txt = await res.text().catch(()=>'');
+          throw new Error(`n8n ${res.status}: ${txt}`);
+        }
+
+        const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+        let data;
+        if (ct.includes('application/json')) data = await res.json();
+        else {
+          const txt = await res.text();
+          try { data = JSON.parse(txt); } catch (e) { data = txt; }
+        }
+
+        const reply = extractReply(data) || 'No reply from assistant.';
+        await ensureLibs().catch(()=>{});
+        appendBotMessage(reply);
+      } catch (err) {
+        if (err.name === 'AbortError') appendBotMessage('Previous request canceled.');
+        else {
+          console.error(err);
+          appendBotMessage("Sorry — couldn't reach assistant.");
+        }
+      } finally {
+        setTyping(false);
+        currentRequestAbortController = null;
+      }
+    }
+
+    function openChat() {
+      windowEl.classList.add('open');
+      windowEl.style.display = 'flex';
+      windowEl.style.flexDirection = 'column';
+      windowEl.setAttribute('aria-hidden', 'false');
+      if (inputEl) inputEl.focus();
+      ensureLibs().catch(()=>{});
+      if (firstOpen) {
+        appendInitialClickableList();
+        firstOpen = false;
+      }
+    }
+    function closeChat() {
+      windowEl.classList.remove('open');
+      windowEl.style.display = 'none';
+      windowEl.setAttribute('aria-hidden', 'true');
+    }
+
+    if (launcher) launcher.addEventListener('click', openChat);
+    if (closeBtn) closeBtn.addEventListener('click', closeChat);
+    if (minimizeBtn) minimizeBtn.addEventListener('click', closeChat);
+    if (sendBtn) sendBtn.addEventListener('click', sendTypedMessage);
+    if (inputEl) inputEl.addEventListener('keydown', (e)=> { if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendTypedMessage(); } });
+
+    window.EHAssistant = {
+      sendMessage: async (text) => {
+        appendUserMessage(text);
+        try {
+          setTyping(true);
+          const payload = { sessionId, chatInput: text };
+          const res = await fetch(N8N_CHAT_URL, {
+            method:'POST', mode:'cors',
+            headers:{ 'Content-Type':'application/json','Accept':'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const ct = (res.headers.get('Content-Type') || '').toLowerCase();
+          let data = ct.includes('application/json') ? await res.json() : await res.text();
+          const reply = extractReply(data) || 'No reply from assistant.';
+          await ensureLibs().catch(()=>{});
+          appendBotMessage(reply);
+          setTyping(false);
+          return reply;
+        } catch (e) {
+          setTyping(false);
+          appendBotMessage('Error contacting assistant.');
+          return null;
+        }
+      },
+      open: openChat, close: closeChat, sessionId
+    };
+  })();
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

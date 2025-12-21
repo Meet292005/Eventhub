@@ -1,0 +1,24 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow-lg bg-dark text-white p-4">
+        <h3 class="text-center text-warning mb-4">Select Event to Verify Customers</h3>
+
+        <div class="list-group">
+            {% for event in events %}
+                <a href="{% url 'verify_event_customers' event.id %}" 
+                   class="list-group-item list-group-item-action d-flex justify-content-between align-items-center bg-dark text-white border-warning mb-2 rounded">
+                    <span>
+                        <strong>{{ event.title }}</strong><br>
+                        <small class="text-muted">{{ event.date }} - {{ event.location }}</small>
+                    </span>
+                    <button class="btn btn-sm btn-outline-warning">Verify Customers</button>
+                </a>
+            {% empty %}
+                <p class="text-center text-muted">No events found.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

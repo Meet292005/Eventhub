@@ -1,0 +1,38 @@
+{% extends "profile/base_dashboard.html" %}
+{% block content %}
+<div class="container mt-5 d-flex justify-content-center">
+    <div class="card shadow-lg p-4" style="max-width: 500px; width: 100%; border-radius: 15px;">
+        <h3 class="text-center mb-4 text-danger">
+            <i class="bi bi-x-circle-fill"></i> Cancel Tickets
+        </h3>
+
+        <div class="mb-3">
+            <p><strong>🎫 Event:</strong> {{ booking.event.title }}</p>
+            <p><strong>Total booked:</strong> {{ booking.tickets_booked }}</p>
+            <p><strong>Already canceled:</strong> {{ booking.canceled_tickets }}</p>
+            <p><strong>Available to cancel:</strong> {{ booking.active_tickets }}</p>
+        </div>
+
+        <form method="post" class="mt-3">
+            {% csrf_token %}
+            <div class="form-group mb-3">
+                <label for="cancel_count" class="form-label fw-bold">Number of tickets to cancel</label>
+                <input type="number" name="cancel_count" id="cancel_count" 
+                       class="form-control" 
+                       min="1" 
+                       max="{{ booking.tickets_booked|add:"-booking.canceled_tickets" }}" 
+                       required>
+            </div>
+
+            <button type="submit" class="btn btn-danger w-100 mb-2">
+                <i class="bi bi-trash-fill"></i> Cancel Selected Tickets
+            </button>
+
+            <!-- Back Button -->
+            <a href="{% url 'my_bookings' %}" class="btn btn-secondary w-100">
+                ⬅️ Back to My Bookings
+            </a>
+        </form>
+    </div>
+</div>
+{% endblock %}

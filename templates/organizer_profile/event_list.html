@@ -1,0 +1,110 @@
+{% extends 'organizer_profile/base_dashboard.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+  .event-card {
+    background-color: #1f1f1f;
+    color: #ffffff;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+    margin-bottom: 20px;
+    transition: transform 0.3s;
+  }
+
+  .event-card:hover {
+    transform: scale(1.02);
+  }
+
+  .event-banner {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  .event-content {
+    padding: 15px;
+  }
+
+  .badge {
+    background-color: #ff6600;
+    color: white;
+    font-size: 0.75rem;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+
+  .event-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin: 10px 0 5px 0;
+  }
+
+  .event-info {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+  }
+
+  .event-icon {
+    margin-right: 6px;
+    color: #ffa500;
+  }
+
+  .btn-view {
+    background-color: #ffc107;
+    border: none;
+    color: black;
+    font-weight: bold;
+    padding: 8px 15px;
+    border-radius: 8px;
+    text-decoration: none;
+  }
+
+  .btn-view:hover {
+    background-color: #e0a800;
+    text-decoration: none;
+  }
+</style>
+
+<div class="container py-4">
+  <h2 class="text-center mb-4">🗂️ Your Events</h2>
+
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+    
+    {% for event in events %}
+    <div class="col">
+      <div class="event-card">
+        {% if event.banner %}
+        <img src="{{ event.banner.url }}" alt="Event Banner" class="event-banner">
+        {% else %}
+        <img src="{{ MEDIA_URL }}event_default.jpg" alt="Default Banner" class="event-banner">
+        {% endif %}
+        <div class="event-content">
+          <span class="badge">{{ event.get_category_display }}</span>
+          <div class="event-title">{{ event.title }}</div>
+
+          <div class="event-info">
+            <i class="fa fa-calendar event-icon"></i>{{ event.date }}
+          </div>
+          <div class="event-info">
+            <i class="fa fa-map-marker event-icon"></i>{{ event.location }}
+          </div>
+
+
+
+          <a href="{% url 'event_detail' event.id %}" class="btn btn-view mt-3">View Details</a>
+        </div>
+      </div>
+    </div>
+     {% empty %}
+    <div style="color: #aaa; text-align: center; width: 100%; font-size: 18px; padding: 40px;">
+      You haven't created any events yet.
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

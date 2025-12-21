@@ -1,0 +1,626 @@
+{% extends "admin/change_form.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* ===========================
+           PAGE WRAPPER + LAYOUT
+        ============================ */
+
+        /* Outer wrapper for the whole profile page */
+        .eh-prof-page-shell {
+            max-width: 1200px;
+            margin: 18px auto 30px;
+            padding: 0 8px;
+        }
+
+        /* 2-column layout: left = overview/cards, right = form */
+        .eh-prof-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+            column-gap: 28px;
+            align-items: flex-start;
+        }
+
+        .eh-prof-left {
+            min-width: 0;
+        }
+
+        .eh-prof-right {
+            min-width: 0;
+        }
+
+        /* Make the default admin content behave nicely inside right column */
+        body.app-user.model-profile.change-form #content {
+            margin: 0;   /* remove default side margin inside our column */
+            padding: 0;
+            box-shadow: none;
+            border: 0;
+            background: transparent;
+        }
+
+        body.app-user.model-profile.change-form #content-main {
+            max-width: 100%;
+            margin: 0;
+        }
+
+        /* Hide default big title and header area for this model */
+        body.app-user.model-profile.change-form #content > h1,
+        body.app-user.model-profile.change-form #content h2,
+        body.app-user.model-profile.change-form #content-header {
+            display: none !important;
+        }
+
+        /* Make the built-in Django form look like EventHub cards */
+        body.app-user.model-profile.change-form #content-main > form {
+            background: transparent;
+        }
+
+        body.app-user.model-profile.change-form #content-main .module,
+        body.app-user.model-profile.change-form #content-main .inline-group {
+            background: radial-gradient(circle at top,
+                        rgba(15,23,42,0.96) 0,
+                        #020617 55%);
+            border-radius: 18px;
+            border: 1px solid rgba(15,23,42,0.95);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.95);
+            margin-bottom: 18px;
+        }
+
+        body.app-user.model-profile.change-form #content-main fieldset.module h2 {
+            background: linear-gradient(90deg, #020617, #050816);
+            border-radius: 18px 18px 0 0;
+            border-bottom: 1px solid #020617;
+            color: #e5e7eb;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            padding: 7px 14px;
+        }
+
+        body.app-user.model-profile.change-form #content-main .module.aligned,
+        body.app-user.model-profile.change-form #content-main .inline-group .module {
+            border-radius: 0 0 18px 18px;
+        }
+
+        /* Form rows / labels */
+        body.app-user.model-profile.change-form .aligned label {
+            color: #d1d5db;
+            font-size: 12px;
+        }
+
+        body.app-user.model-profile.change-form .aligned .vTextField,
+        body.app-user.model-profile.change-form .aligned select,
+        body.app-user.model-profile.change-form .aligned textarea,
+        body.app-user.model-profile.change-form .aligned input[type="number"],
+        body.app-user.model-profile.change-form .aligned input[type="email"],
+        body.app-user.model-profile.change-form .aligned input[type="text"] {
+            background: #020617;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            color: #e5e7eb;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+
+        body.app-user.model-profile.change-form .aligned input:focus,
+        body.app-user.model-profile.change-form .aligned select:focus,
+        body.app-user.model-profile.change-form .aligned textarea:focus {
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 1px rgba(251,191,36,0.25);
+        }
+
+        /* Submit row – match EventHub buttons style */
+        body.app-user.model-profile.change-form .submit-row {
+            margin-top: 22px;
+            border-radius: 16px;
+            border: 1px solid #111827;
+            background: radial-gradient(circle at top,
+                        rgba(15,23,42,0.96) 0,
+                        #020617 60%);
+            box-shadow: 0 18px 36px rgba(0,0,0,0.95);
+        }
+
+        body.app-user.model-profile.change-form .submit-row input[type="submit"],
+        body.app-user.model-profile.change-form .submit-row input.default,
+        body.app-user.model-profile.change-form .submit-row .deletelink {
+            border-radius: 999px;
+            padding-inline: 18px;
+            font-size: 12px;
+        }
+
+        body.app-user.model-profile.change-form .submit-row input.default {
+            background: linear-gradient(135deg, #f97316, #fbbf24);
+            border: none;
+            color: #111827;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            font-weight: 600;
+        }
+
+        body.app-user.model-profile.change-form .submit-row input.default:hover {
+            filter: brightness(1.05);
+        }
+
+        /* ===========================
+           HEADER SUMMARY CARD
+        ============================ */
+        .eh-prof-header-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: #6b7280;
+            margin-bottom: 6px;
+        }
+
+        .eh-prof-header-card {
+            background: radial-gradient(circle at top,
+                        rgba(30, 64, 175, 0.22) 0,
+                        rgba(17,24,39,0.98) 45%,
+                        #020617 80%);
+            border-radius: 22px;
+            padding: 16px 20px;
+            border: 1px solid rgba(31,41,55,0.95);
+            box-shadow: 0 22px 45px rgba(0,0,0,0.95);
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .eh-prof-header-card::before {
+            content: "";
+            position: absolute;
+            inset: -40%;
+            background: radial-gradient(circle at top right,
+                        rgba(249,115,22,0.26),
+                        transparent 60%);
+            opacity: .7;
+            pointer-events: none;
+        }
+
+        .eh-prof-header-avatar {
+            position: relative;
+            z-index: 1;
+            width: 56px;
+            height: 56px;
+            border-radius: 999px;
+            background: radial-gradient(circle at 20% 0,
+                        #f97316,
+                        #b45309 55%,
+                        #111827 80%);
+            border: 1px solid rgba(248,250,252,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 22px;
+            color: #fffbeb;
+            box-shadow:
+                0 0 18px rgba(251,191,36,0.8),
+                0 12px 25px rgba(0,0,0,0.9);
+        }
+
+        .eh-prof-header-main {
+            position: relative;
+            z-index: 1;
+            flex: 1;
+        }
+
+        .eh-prof-header-name {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .eh-prof-header-sub {
+            font-size: 12px;
+            color: #d1d5db;
+            margin-top: 2px;
+        }
+
+        .eh-prof-header-badges {
+            margin-top: 7px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            font-size: 11px;
+        }
+
+        .eh-prof-header-badge {
+            padding: 3px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(55,65,81,0.95);
+            background: rgba(15,23,42,0.92);
+            color: #e5e7eb;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .eh-prof-header-badge strong {
+            color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .eh-prof-header-actions {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            font-size: 11px;
+            text-align: right;
+        }
+
+        .eh-prof-header-btn {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 999px;
+            border: 1px solid rgba(249,115,22,0.9);
+            background: rgba(249,115,22,0.16);
+            text-decoration: none;
+            color: #fed7aa;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .eh-prof-header-btn:hover {
+            background: rgba(249,115,22,0.28);
+        }
+
+        /* ===========================
+           DETAIL CARDS (GRID)
+        ============================ */
+        .eh-prof-details-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .eh-prof-detail-card {
+            background: radial-gradient(circle at top left,
+                        rgba(15,23,42,0.94),
+                        #020617 70%);
+            border-radius: 18px;
+            padding: 14px 16px 13px;
+            border: 1px solid rgba(31,41,55,0.95);
+            box-shadow: 0 18px 35px rgba(0,0,0,0.95);
+            color: #e5e7eb;
+            position: relative;
+        }
+
+        .eh-prof-detail-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            border: 1px solid rgba(148,163,184,0.24);
+            opacity: 0.25;
+            pointer-events: none;
+        }
+
+        .eh-prof-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .eh-prof-detail-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: #fbbf24;
+        }
+
+        .eh-prof-detail-pill {
+            font-size: 11px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(55,65,81,0.95);
+            background: rgba(15,23,42,0.96);
+            color: #e5e7eb;
+        }
+
+        .eh-prof-detail-avatar-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+
+        .eh-prof-detail-avatar-wrap img {
+            width: 52px;
+            height: 52px;
+            border-radius: 999px;
+            object-fit: cover;
+            border: 1px solid rgba(55,65,81,0.9);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.9);
+        }
+
+        .eh-prof-detail-body {
+            font-size: 12px;
+            display: grid;
+            grid-template-columns: 1.1fr 1.1fr;
+            column-gap: 10px;
+            row-gap: 4px;
+            margin-top: 2px;
+        }
+
+        .eh-prof-detail-row {
+            display: flex;
+            gap: 4px;
+        }
+
+        .eh-prof-detail-label {
+            min-width: 80px;
+            color: #9ca3af;
+        }
+
+        .eh-prof-detail-value {
+            color: #e5e7eb;
+            word-break: break-word;
+        }
+
+        .eh-prof-detail-btn {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            border: 1px solid rgba(34,197,94,0.9);
+            background: rgba(22,163,74,0.18);
+            color: #bbf7d0;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            font-weight: 600;
+        }
+
+        .eh-prof-detail-btn:hover {
+            background: rgba(22,163,74,0.28);
+        }
+
+        @media (max-width: 960px) {
+            .eh-prof-layout {
+                grid-template-columns: 1fr;
+                row-gap: 24px;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .eh-prof-detail-body {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock extrastyle %}
+
+{% block content %}
+<div class="eh-prof-page-shell">
+    <div class="eh-prof-layout">
+
+        {# LEFT COLUMN: overview + detail cards #}
+        <div class="eh-prof-left">
+            {% if original %}
+                <div class="eh-prof-header-title">
+                    PROFILE OVERVIEW
+                </div>
+
+                <div class="eh-prof-header-card">
+                    <div class="eh-prof-header-avatar">
+                        {{ original.user.username|first|upper }}
+                    </div>
+
+                    <div class="eh-prof-header-main">
+                        <div class="eh-prof-header-name">
+                            {{ original.user.get_full_name|default:original.user.username }}
+                        </div>
+                        <div class="eh-prof-header-sub">
+                            {{ original.user.email }}
+                        </div>
+                        <div class="eh-prof-header-badges">
+                            <span class="eh-prof-header-badge">
+                                <strong>Role</strong> · {{ original.get_role_display }}
+                            </span>
+                            <span class="eh-prof-header-badge">
+                                <strong>HUB Tokens</strong> · {{ original.hub_tokens }}
+                            </span>
+                            {% if is_customer_role and customer_booking_count %}
+                                <span class="eh-prof-header-badge">
+                                    🎫 Bookings · {{ customer_booking_count }}
+                                </span>
+                            {% endif %}
+                            {% if is_organizer_role and organizer_event_count %}
+                                <span class="eh-prof-header-badge">
+                                    🎟 Events · {{ organizer_event_count }}
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="eh-prof-header-actions">
+                        {% if is_customer_role and customer_booking_count %}
+                            <a href="{{ customer_bookings_url }}" class="eh-prof-header-btn">
+                                View bookings ({{ customer_booking_count }})
+                            </a>
+                        {% endif %}
+                        {% if is_organizer_role and organizer_event_count %}
+                            <a href="{{ organizer_events_url }}" class="eh-prof-header-btn">
+                                View events ({{ organizer_event_count }})
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="eh-prof-details-grid">
+
+                    {% if customer_obj %}
+                        <div class="eh-prof-detail-card">
+                            <div class="eh-prof-detail-header">
+                                <span class="eh-prof-detail-title">Customer details</span>
+                                {% if customer_booking_count %}
+                                    <span class="eh-prof-detail-pill">
+                                        🎫 Bookings: {{ customer_booking_count }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="eh-prof-detail-avatar-wrap">
+                                {% if customer_obj.image %}
+                                    <img src="{{ customer_obj.image.url }}" alt="Customer photo">
+                                {% endif %}
+                            </div>
+
+                            <div class="eh-prof-detail-body">
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Phone:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.phone|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">City:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.city|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">State:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.state|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Language:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.language|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">DOB:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.dob|date:"d M Y"|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Interests:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.interests|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Address:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ customer_obj.address|linebreaksbr|default:"—" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {% if customer_booking_count and customer_bookings_url %}
+                                <div style="margin-top:10px;">
+                                    <a href="{{ customer_bookings_url }}" class="eh-prof-detail-btn">
+                                        Go to bookings
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    {% if organizer_obj %}
+                        <div class="eh-prof-detail-card">
+                            <div class="eh-prof-detail-header">
+                                <span class="eh-prof-detail-title">Organizer details</span>
+                                {% if organizer_event_count %}
+                                    <span class="eh-prof-detail-pill">
+                                        🎟 Events: {{ organizer_event_count }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <div class="eh-prof-detail-avatar-wrap">
+                                {% if organizer_obj.logo %}
+                                    <img src="{{ organizer_obj.logo.url }}" alt="Organizer logo">
+                                {% endif %}
+                            </div>
+
+                            <div class="eh-prof-detail-body">
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Org:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.organization_name|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Phone:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.phone|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">City:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.city|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">State:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.state|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Website:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.website|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">UPI ID:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.upi_id|default:"—" }}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">Bank:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.bank_name|default:"—" }}
+                                        {% if organizer_obj.bank_account_number %}
+                                            (A/C {{ organizer_obj.bank_account_number }})
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="eh-prof-detail-row">
+                                    <span class="eh-prof-detail-label">IFSC:</span>
+                                    <span class="eh-prof-detail-value">
+                                        {{ organizer_obj.bank_ifsc_code|default:"—" }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {% if organizer_event_count and organizer_events_url %}
+                                <div style="margin-top:10px;">
+                                    <a href="{{ organizer_events_url }}" class="eh-prof-detail-btn">
+                                        Go to events
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                </div>  {# /.eh-prof-details-grid #}
+            {% endif %}
+        </div>
+
+        {# RIGHT COLUMN: default Django Profile form + buttons #}
+        <div class="eh-prof-right">
+            {{ block.super }}
+        </div>
+
+    </div>
+</div>
+{% endblock content %}

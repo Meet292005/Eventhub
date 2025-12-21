@@ -1,0 +1,466 @@
+{% extends "admin/change_form.html" %}
+{% load i18n admin_urls static admin_modify %}
+
+
+{# ---------- Extra CSS only for Booking change form ---------- #}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+
+          body.app-user.model-booking.change-form #content > h1,
+        body.app-user.model-booking.change-form #content h2,
+        body.app-user.model-booking.change-form #content-main > h1,
+        body.app-user.model-booking.change-form #content-header {
+            display: none !important;
+        }
+
+        .eh-book-form-shell {
+            max-width: 1320px;
+            margin: 16px auto 24px;
+            padding: 0 8px 24px;
+        }
+        
+        .eh-book-form-shell {
+            max-width: 1320px;
+            margin: 16px auto 24px;
+            padding: 0 8px 24px;
+        }
+
+        /* header / breadcrumbs bar */
+        .eh-book-breadcrumbs {
+            margin-bottom: 10px;
+            font-size: 13px;
+        }
+        .eh-book-breadcrumbs .breadcrumbs {
+            padding: 6px 12px;
+            border-radius: 999px;
+            display: inline-flex;
+            gap: 4px;
+            align-items: center;
+            background: radial-gradient(circle at left,
+                        rgba(249,115,22,0.25),
+                        rgba(15,23,42,0.95));
+            color: #e5e7eb;
+            border: 1px solid rgba(248,153,50,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+        }
+        .eh-book-breadcrumbs .breadcrumbs a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+        .eh-book-breadcrumbs .breadcrumbs a:hover {
+            text-decoration: underline;
+        }
+
+        .eh-book-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2.2fr) minmax(280px, 0.9fr);
+            gap: 18px;
+            align-items: flex-start;
+        }
+
+        @media (max-width: 1100px) {
+            .eh-book-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .eh-card {
+            background: #020617;
+            border-radius: 14px;
+            padding: 14px 16px 12px;
+            border: 1px solid rgba(148,163,184,0.2);
+            box-shadow:
+                0 0 0 1px rgba(15,23,42,0.85),
+                0 18px 40px rgba(0,0,0,0.55);
+            color: #e5e7eb;
+        }
+
+        .eh-card-summary {
+            position: sticky;
+            top: 70px;
+            background: radial-gradient(circle at top left,
+                        rgba(249,115,22,0.12),
+                        #020617 55%);
+            border-color: rgba(248,153,50,0.45);
+        }
+
+        .eh-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .eh-card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .eh-card-subtitle {
+            font-size: 11px;
+            color: #9ca3af;
+            margin: 0;
+        }
+
+        .eh-form-errors {
+            margin-bottom: 10px;
+        }
+
+        .eh-summary-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin: 10px 0 4px;
+            color: #e5e7eb;
+            opacity: 0.8;
+        }
+
+        .eh-summary-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 6px 0;
+            font-size: 12px;
+        }
+
+        .eh-summary-list li {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 4px 0;
+            border-bottom: 1px dashed rgba(55,65,81,0.6);
+        }
+
+        .eh-summary-list li:last-child {
+            border-bottom: none;
+        }
+
+        .eh-summary-label {
+            color: #9ca3af;
+            white-space: nowrap;
+        }
+
+        .eh-summary-value {
+            font-weight: 500;
+            text-align: right;
+            color: #f9fafb;
+        }
+
+        .eh-summary-amount {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .eh-summary-amount small {
+            font-size: 10px;
+            font-weight: 400;
+            color: #9ca3af;
+            margin-left: 4px;
+        }
+
+        .eh-summary-muted {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 6px;
+        }
+
+        .eh-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 2px 9px 3px;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .eh-badge-status {
+            background: rgba(148,163,184,0.08);
+            color: #e5e7eb;
+            border: 1px solid rgba(148,163,184,0.4);
+        }
+
+        .eh-badge-paid {
+            background: rgba(22,163,74,0.18);
+            color: #4ade80;
+            border: 1px solid rgba(34,197,94,0.7);
+        }
+
+        .eh-badge-pending {
+            background: rgba(234,179,8,0.16);
+            color: #fde68a;
+            border: 1px solid rgba(234,179,8,0.8);
+        }
+
+        .eh-badge-failed {
+            background: rgba(239,68,68,0.20);
+            color: #fecaca;
+            border: 1px solid rgba(248,113,113,0.9);
+        }
+
+        .eh-badge-tokens {
+            background: rgba(168,85,247,0.2);
+            color: #e9d5ff;
+            border: 1px solid rgba(192,132,252,0.9);
+        }
+
+        .eh-summary-qr {
+            margin-top: 10px;
+            text-align: center;
+            border-radius: 10px;
+            border: 1px dashed rgba(148,163,184,0.5);
+            padding: 8px;
+            font-size: 11px;
+            color: #9ca3af;
+            background: radial-gradient(circle at top,
+                        rgba(15,23,42,0.9),
+                        rgba(15,23,42,0.95));
+        }
+
+        .eh-summary-qr img {
+            max-width: 120px;
+            height: auto;
+            display: block;
+            margin: 6px auto 0;
+        }
+
+        .eh-submit-row-top {
+            margin-top: 4px;
+        }
+
+        .eh-object-tools-wrap {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+        }
+
+        .eh-object-tools-wrap .object-tools {
+            float: none;
+            margin: 0;
+        }
+
+        
+    </style>
+{% endblock extrastyle %}
+
+{# ---------- Main content ---------- #}
+{% block content %}
+<div class="eh-book-form-shell">
+
+    {# object tools (History, View on site, etc.) #}
+    {% block object-tools %}
+        {% if change %}
+            <div class="eh-object-tools-wrap">
+                <ul class="object-tools">
+                    {% block object-tools-items %}
+                        {% if has_absolute_url %}
+                            <li>
+                                <a href="{{ absolute_url }}" class="viewsitelink">
+                                    {% translate "View on site" %}
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% if change and not is_popup and has_view_permission %}
+                            <li>
+                                <a href="../history/">{% translate "History" %}</a>
+                            </li>
+                        {% endif %}
+                    {% endblock %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endblock object-tools %}
+
+    <form {% if has_file_field %}enctype="multipart/form-data"{% endif %}
+          action="{{ form_url }}"
+          method="post"
+          id="{{ opts.model_name }}_form"
+          novalidate>
+        {% csrf_token %}
+
+        {% if is_popup %}
+            <input type="hidden" name="_popup" value="1">
+        {% endif %}
+        {% if to_field %}
+            <input type="hidden" name="_to_field" value="{{ to_field }}">
+        {% endif %}
+
+        <div class="eh-book-layout">
+
+            {# LEFT: main form #}
+            <div class="eh-card">
+                <div class="eh-card-header">
+                    <div>
+                        <h2 class="eh-card-title">
+                            {% if change %}{% translate "Edit booking" %}{% else %}{% translate "Add booking" %}{% endif %}
+                        </h2>
+                        <p class="eh-card-subtitle">
+                            {{ opts.app_config.verbose_name|capfirst }} – {{ opts.verbose_name|capfirst }}
+                        </p>
+                    </div>
+                    {% if change and original %}
+                        <span class="eh-badge eh-badge-status">
+                            #{{ original.pk }}
+                        </span>
+                    {% endif %}
+                </div>
+
+                <div class="eh-form-errors">
+                    {{ adminform.form.non_field_errors }}
+                </div>
+
+                {% block form_top %}{% endblock %}
+
+                {% for fieldset in adminform %}
+                    {% include "admin/includes/fieldset.html" %}
+                {% endfor %}
+
+                {% if inline_admin_formsets %}
+                    {% for inline_admin_formset in inline_admin_formsets %}
+                        {% include inline_admin_formset.opts.template %}
+                    {% endfor %}
+                {% endif %}
+
+                <div class="eh-submit-row-top">
+                    {% submit_row %}
+                </div>
+            </div>
+
+            {# RIGHT: summary card #}
+            <aside class="eh-card eh-card-summary">
+                <div class="eh-card-header">
+                    <div>
+                        <h3 class="eh-card-title">{% translate "Booking summary" %}</h3>
+                        <p class="eh-card-subtitle">
+                            {% if original %}
+                                {% translate "Snapshot of this booking" %}
+                            {% else %}
+                                {% translate "Summary will appear after saving" %}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                {% if original %}
+                    <div>
+                        <div class="eh-summary-section-title">
+                            {% translate "Core details" %}
+                        </div>
+                        <ul class="eh-summary-list">
+                            <li>
+                                <span class="eh-summary-label">{% translate "Event" %}</span>
+                                <span class="eh-summary-value">{{ original.event }}</span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "Booked by" %}</span>
+                                <span class="eh-summary-value">{{ original.user }}</span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "Status" %}</span>
+                                <span class="eh-summary-value">
+                                    {% if original.status %}
+                                        <span class="eh-badge eh-badge-status">
+                                            {{ original.status|upper }}
+                                        </span>
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="eh-summary-section-title">
+                            {% translate "Payment" %}
+                        </div>
+                        <ul class="eh-summary-list">
+                            <li>
+                                <span class="eh-summary-label">{% translate "Total" %}</span>
+                                <span class="eh-summary-value eh-summary-amount">
+                                    ₹ {{ original.total_price|default:"0" }}
+                                    <small>{% translate "incl. tokens" %}</small>
+                                </span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "Payment status" %}</span>
+                                <span class="eh-summary-value">
+                                    {% if original.payment_status %}
+                                        {% with ps=original.payment_status|lower %}
+                                            {% if ps == "paid" %}
+                                                <span class="eh-badge eh-badge-paid">{% translate "PAID" %}</span>
+                                            {% elif ps == "pending" %}
+                                                <span class="eh-badge eh-badge-pending">{% translate "PENDING" %}</span>
+                                            {% else %}
+                                                <span class="eh-badge eh-badge-failed">{{ original.payment_status|upper }}</span>
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "HUB tokens used" %}</span>
+                                <span class="eh-summary-value">
+                                    {% if original.tokens_used %}
+                                        <span class="eh-badge eh-badge-tokens">
+                                            {{ original.tokens_used }} HUB
+                                        </span>
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </span>
+                            </li>
+                        </ul>
+
+                        <div class="eh-summary-section-title">
+                            {% translate "Meta" %}
+                        </div>
+                        <ul class="eh-summary-list">
+                            <li>
+                                <span class="eh-summary-label">{% translate "Booking code" %}</span>
+                                <span class="eh-summary-value">{{ original.booking_code|default:"—" }}</span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "Created at" %}</span>
+                                <span class="eh-summary-value">
+                                    {{ original.created_at|date:"d M Y, H:i" }}
+                                </span>
+                            </li>
+                            <li>
+                                <span class="eh-summary-label">{% translate "Updated at" %}</span>
+                                <span class="eh-summary-value">
+                                    {{ original.updated_at|date:"d M Y, H:i" }}
+                                </span>
+                            </li>
+                        </ul>
+
+                        <p class="eh-summary-muted">
+                            {% translate "Values are read-only here. Change them using the form on the left." %}
+                        </p>
+
+                        {% if original.ticket_qr_url or original.ticket_qr_image %}
+                        <div class="eh-summary-qr">
+                            <div>{% translate "Ticket QR preview" %}</div>
+                            {% if original.ticket_qr_image %}
+                                <img src="{{ original.ticket_qr_image.url }}" alt="Ticket QR">
+                            {% elif original.ticket_qr_url %}
+                                <img src="{{ original.ticket_qr_url }}" alt="Ticket QR">
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="eh-summary-muted">
+                        {% translate "Once you save the booking, key information like event, user, tokens and payment details will be shown here." %}
+                    </p>
+                {% endif %}
+            </aside>
+        </div>
+
+        
+    </form>
+</div>
+{% endblock content %}

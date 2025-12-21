@@ -1,0 +1,287 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<style>
+/* ================= CARD ================= */
+.card {
+    border-radius: 16px;
+    border: none;
+    overflow: visible !important; /* REQUIRED for sticky */
+}
+
+/* ================= STICKY EVENT HEADER ================= */
+.card-header {
+    position: sticky;
+    top: 64px; /* below navbar */
+    z-index: 1020;
+    background: #000;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.6);
+}
+
+/* Bootstrap collapse FIX */
+.collapse,
+.collapsing {
+    overflow: visible !important;
+}
+
+/* ================= BADGES ================= */
+.badge {
+    border-radius: 8px;
+    font-size: 0.8rem;
+    padding: 6px 10px;
+}
+
+/* ================= MOBILE BOOKING CARDS ================= */
+.booking-card {
+    background: #1c1c1c;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 5px 14px rgba(0,0,0,0.6);
+}
+
+.booking-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.booking-label {
+    color: #ffa500;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.booking-value {
+    text-align: right;
+    font-size: 0.85rem;
+    word-break: break-word;
+}
+
+.username-text {
+    font-size: 0.75rem;
+    color: #aaa;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .desktop-table {
+        display: none;
+    }
+    .card-header {
+        top: 56px;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-cards {
+        display: none;
+    }
+}
+</style>
+
+<div class="container mt-4">
+    <h2 class="text-white mb-4">📅 Your Event Registrations</h2>
+
+    {% if event_data %}
+        {% for e in event_data %}
+        <div class="card bg-dark text-light mb-4 shadow">
+
+            <!-- ================= EVENT HEADER ================= -->
+            <div class="card-header p-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="text-warning fw-bold mb-0">
+                        {{ e.event.title }}
+                    </h5>
+
+                    <button class="btn btn-sm btn-outline-info"
+                            onclick="exportTable('table{{ forloop.counter }}')">
+                        ⬇ Export
+                    </button>
+                </div>
+
+                <div class="d-flex flex-wrap gap-2 mt-2">
+                    <span class="badge bg-success">🎟 {{ e.total_tickets }}</span>
+                    <span class="badge bg-danger">❌ {{ e.total_canceled }}</span>
+                    <span class="badge bg-info text-dark">💰 ₹{{ e.total_revenue }}</span>
+
+                    <button class="btn btn-sm btn-outline-warning"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#collapse{{ forloop.counter }}">
+                        👥 View ({{ e.bookings|length }})
+                    </button>
+                </div>
+            </div>
+
+            <!-- ================= BOOKINGS ================= -->
+            <div id="collapse{{ forloop.counter }}" class="collapse show">
+                <div class="card-body">
+
+                {% if e.bookings %}
+
+                    <!-- ================= DESKTOP TABLE ================= -->
+                    <div class="desktop-table table-responsive">
+                        <table id="table{{ forloop.counter }}"
+                               class="table table-dark table-striped text-center align-middle">
+
+                            <thead class="table-warning text-dark">
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Contact</th>
+                                    <th>City</th>
+                                    <th>Tickets</th>
+                                    <th>Canceled</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Payment</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for booking in e.bookings %}
+                                <tr>
+                                    <td>
+                                        <b>{{ booking.booking_name|default:"—" }}</b>
+                                        <div class="username-text">
+                                            @{{ booking.customer.username|default:"—" }}
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        {{ booking.customer_email|default:"—" }}<br>
+                                        <small class="text-info">
+                                            {{ booking.customer_phone|default:"—" }}
+                                        </small>
+                                    </td>
+
+                                    <td>{{ booking.customer.city|default:"—" }}</td>
+                                    <td>{{ booking.tickets_booked }}</td>
+                                    <td>{{ booking.canceled_tickets }}</td>
+                                    <td>₹{{ booking.total_price }}</td>
+
+                                    <td>
+                                        <span class="badge bg-success">
+                                            {{ booking.payment_status|title }}
+                                        </span>
+                                    </td>
+
+                                    <td>{{ booking.payment_method|default:"—" }}</td>
+                                    <td>{{ booking.booking_date|date:"d M Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- ================= MOBILE CARDS ================= -->
+                    <div class="mobile-cards">
+                        {% for booking in e.bookings %}
+                        <div class="booking-card">
+
+                            <div class="booking-row">
+                                <span class="booking-label">Customer</span>
+                                <span class="booking-value">
+                                    {{ booking.booking_name|default:"—" }}<br>
+                                    <span class="username-text">
+                                        @{{ booking.customer.username|default:"—" }}
+                                    </span>
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Contact</span>
+                                <span class="booking-value">
+                                    {{ booking.customer_email|default:"—" }}<br>
+                                    {{ booking.customer_phone|default:"—" }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">City</span>
+                                <span class="booking-value">
+                                    {{ booking.customer.city|default:"—" }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Tickets</span>
+                                <span class="booking-value">
+                                    {{ booking.tickets_booked }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Canceled</span>
+                                <span class="booking-value">
+                                    {{ booking.canceled_tickets }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Total</span>
+                                <span class="booking-value">
+                                    ₹{{ booking.total_price }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Payment</span>
+                                <span class="booking-value">
+                                    {{ booking.payment_method|default:"—" }}
+                                </span>
+                            </div>
+
+                            <div class="booking-row">
+                                <span class="booking-label">Date</span>
+                                <span class="booking-value">
+                                    {{ booking.booking_date|date:"d M Y" }}
+                                </span>
+                            </div>
+
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                {% else %}
+                    <div class="alert alert-info">
+                        No bookings for this event yet.
+                    </div>
+                {% endif %}
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info">
+            You don’t have any event bookings yet.
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function exportTable(tableId) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+
+    let csv = [];
+    for (let row of table.rows) {
+        let cols = Array.from(row.cells).map(
+            col => `"${col.innerText.replace(/"/g, '""')}"`
+        );
+        csv.push(cols.join(","));
+    }
+
+    let blob = new Blob([csv.join("\n")], { type: "text/csv" });
+    let a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "event_bookings.csv";
+    a.click();
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<div class="container mt-5 text-center">
+  <h2 class="text-warning mb-4">⚠️ Confirm Deletion</h2>
+  <p class="text-light">Are you sure you want to delete the event: <strong>{{ event.title }}</strong>?</p>
+
+  <form method="post" action="{% url 'delete_event' event.id %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger btn-lg me-2">🗑️ Yes, Delete</button>
+    <a href="{% url 'select_event_to_update' %}" class="btn btn-secondary btn-lg">Cancel</a>
+  </form>
+</div>
+{% endblock %}

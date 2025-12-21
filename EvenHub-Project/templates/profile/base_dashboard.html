@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard | EventHub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #121212;
+      color: white;
+    }
+
+    .sidebar {
+      background: #1a1a1a;
+      padding: 1rem;
+    }
+
+    .nav-link,
+    .logout-btn {
+      color: white;
+      margin-bottom: 0.5rem;
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      display: block;
+      transition: all 0.3s ease;
+      text-align: left;
+    }
+
+    .nav-link:hover,
+    .logout-btn:hover {
+      background: #ff6a00;
+      color: white;
+      transform: scale(1.03);
+    }
+
+    .nav-link.active {
+      background-color: #ff6a00;
+      color: white;
+      box-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
+    }
+
+    /* Animation for User Info */
+    .nav-link.active.user-info-animate {
+      animation: pulse-glow 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse-glow {
+      0% {
+        box-shadow: 0 0 0px rgba(255, 140, 0, 0.5);
+      }
+
+      50% {
+        box-shadow: 0 0 12px rgba(255, 140, 0, 1);
+      }
+
+      100% {
+        box-shadow: 0 0 0px rgba(255, 140, 0, 0.5);
+      }
+    }
+
+    .sidebar-toggle {
+      background: none;
+      border: none;
+      color: #ff6a00;
+      font-size: 1.5rem;
+    }
+
+    @media (min-width: 768px) {
+      #sidebarMenu {
+        display: block !important;
+      }
+    }
+
+    .logout-btn {
+      background: none;
+      border: none;
+      width: 100%;
+      font-weight: 500;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Mobile Header -->
+  <div class="d-md-none d-flex justify-content-between align-items-center p-3 border-bottom bg-dark">
+    <h4 class="text-warning mb-0">⭐ EventHub</h4>
+    <button class="sidebar-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+      aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+      ☰
+    </button>
+  </div>
+
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar -->
+      <div class="col-md-3">
+        <div class="collapse d-md-block sidebar" id="sidebarMenu">
+          <h4 class="text-warning">Profile Menu</h4>
+          <a class="nav-link nav-link.active{% if request.resolver_match.url_name == 'home' %}active{% endif %}"
+            href="{% url 'home' %}">🏠 Home</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active user-info-animate{% endif %}"
+            href="{% url 'profile' %}">👤 User Info</a>
+
+          <a class="nav-link {% if request.resolver_match.url_name == 'edit_profile' %}active{% endif %}"
+            href="{% url 'edit_profile' %}">📝 Edit Profile</a>
+
+<a href="{% url 'my_bookings' %}" 
+   class="nav-link {% if request.resolver_match.url_name in 'my_bookings verify_ticket ticket_view' %}active{% endif %}">
+   📅 My Bookings
+</a>
+          <!-- Logout -->
+          <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn nav-link">🚪 Logout</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Main content -->
+      <div class="col-md-9 p-4">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

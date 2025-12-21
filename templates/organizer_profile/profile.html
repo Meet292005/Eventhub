@@ -1,0 +1,216 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<style>
+  body {
+    background-color: #121212;
+    color: white;
+  }
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+  .profile-header img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+  }
+  .profile-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  }
+  .profile-label {
+    color: #ccc;
+    font-weight: 500;
+  }
+  .profile-value {
+    font-weight: 600;
+    color: #fff;
+  }
+  .dashboard-section {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.1);
+  }
+  .dashboard-section h4 {
+    color: #ffc107;
+    margin-bottom: 1rem;
+  }
+  .event-card {
+    background: linear-gradient(145deg, #2a2a2a, #1c1c1c);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+  }
+  .event-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
+  }
+  .btn-orange {
+    background-color: #ff6a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 15px;
+    transition: background 0.3s, transform 0.3s;
+  }
+  .btn-orange:hover {
+    background-color: #ff812b;
+    transform: scale(1.05);
+  }
+  @media (max-width: 768px) {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .profile-header img {
+      margin-bottom: 1rem;
+    }
+    .event-card {
+      text-align: center;
+    }
+    .btn-orange:hover {
+      transform: none;
+    }
+  }
+</style>
+
+<div class="container px-3 px-md-4">
+  <div class="text-center mb-4">
+    <h3 class="text-warning fw-bold">👤 Hello Organizer !</h3>
+    <p class="text-light">Here is your saved information</p>
+  </div>
+
+  <!-- Profile Header -->
+  <div class="profile-header mb-4">
+    {% if organizer.logo %}
+      <img src="{{ organizer.logo.url }}" alt="Organization Logo">
+    {% else %}
+      <img src="{{ MEDIA_URL }}profile_pics/default.jpg" alt="Default Logo">
+    {% endif %}
+    <div>
+      <h4 class="text-light mb-1">{{ organizer.organization_name|default:user.username }}</h4>
+      <p class="text-light mb-0">{{ user.email }}</p>
+    </div>
+  </div>
+
+  <!-- General Info -->
+  <div class="profile-card mb-5">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <span class="profile-label">Phone Number</span><br>
+        <span class="profile-value">{{ organizer.phone|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">City</span><br>
+        <span class="profile-value">{{ organizer.city|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">State</span><br>
+        <span class="profile-value">{{ organizer.state|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Website</span><br>
+        <span class="profile-value">
+          {% if organizer.website %}
+            <a href="{{ organizer.website }}" class="text-decoration-none text-warning" target="_blank">
+              {{ organizer.website }}
+            </a>
+          {% else %}
+            —
+          {% endif %}
+        </span>
+      </div>
+      <div class="col-12">
+        <span class="profile-label">Description</span><br>
+        <span class="profile-value">{{ organizer.description|default:"—" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Details -->
+  <div class="profile-card mb-5">
+    <h5 class="text-warning mb-3">💳 Payment Details</h5>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <span class="profile-label">Bank Name</span><br>
+        <span class="profile-value">{{ organizer.bank_name|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Bank Account Number</span><br>
+        <span class="profile-value">{{ organizer.bank_account_number|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">IFSC Code</span><br>
+        <span class="profile-value">{{ organizer.bank_ifsc_code|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">UPI ID</span><br>
+        <span class="profile-value"> <a href="upi://pay?pa={{ organizer.upi_id }}" class="text-warning text-decoration-none">
+            {{ organizer.upi_id|default:"—" }}
+          </a></span>
+      </div>
+    </div>
+  </div>
+  <!-- Upcoming Events -->
+  <div class="dashboard-section">
+    <h4>📅 Your Upcoming Events</h4>
+    <div class="row g-3">
+      {% if events %}
+        {% for event in events %}
+          <div class="col-md-4">
+            <div class="event-card">
+              <h5>{{ event.title }}</h5>
+              <p>
+                {{ event.date|date:"M d, Y" }} <br>
+                {{ event.location }}
+              </p>
+                  <p>🎟️ Seats Booked: {{ event.total_registrations }}/{{ event.capacity }}</p>
+              <a href="{% url 'update_event' event.id %}" class="btn btn-orange">Manage</a>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="">No upcoming events yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Event Insights -->
+  <div class="dashboard-section">
+    <h4>📊 Event Insights</h4>
+    <ul class="list-group bg-dark border-0">
+      <li class="list-group-item bg-dark text-white">
+        Total Events Created: <strong>{{ total_events }}</strong>
+      </li>
+      <li class="list-group-item bg-dark text-white">
+        Total Registrations: <strong>{{ total_registrations }}</strong>
+      </li>
+      <li class="list-group-item bg-dark text-white">
+        Most Popular Event: 
+        <strong>{% if most_popular_event %}{{ most_popular_event.title }}{% else %}—{% endif %}</strong>
+      </li>
+    </ul>
+  </div>
+
+
+  <!-- Manage Events -->
+  <div class="dashboard-section">
+    <h4>🛠️ Manage Your Events</h4>
+    <div class="d-grid gap-2">
+      <a href="{% url 'create_event' %}">➕ Create New Event</a>
+      <a href="{% url 'select_event_to_update' %}" class="btn btn-orange">📁 View All Your Events</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,176 @@
+{% extends 'organizer_profile/base_dashboard.html' %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background-color: #1e1e1e;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 0 10px rgba(255, 165, 0, 0.3);
+    }
+    .form-container h2 { text-align: center; color: #ffa500; margin-bottom: 30px; }
+    label { color: #ffa500; margin-bottom: 5px; display: block; font-weight: 600; }
+    input, textarea, select {
+        width: 100%; padding: 10px; margin-bottom: 20px;
+        border-radius: 6px; background-color: #2c2c2c; color: #fff; border: 1px solid #444;
+    }
+    .form-container button[type="submit"] {
+        background-color: #ffa500; color: #000; padding: 10px 20px; border: none;
+        border-radius: 6px; cursor: pointer; font-weight: bold;
+    }
+    .form-container button[type="submit"]:hover { background-color: #ff8c00; }
+    #map { width: 100%; height: 300px; margin-bottom: 20px; border-radius: 10px; }
+    #suggestions {
+        background: #2c2c2c; border: 1px solid #444; border-radius: 6px;
+        margin-top: -10px; width: 100%; position: absolute; z-index: 1000;
+        max-height: 200px; overflow-y: auto; display: none;
+    }
+    #suggestions li { padding: 8px; cursor: pointer; color: white; }
+    #suggestions li:hover { background: #444; }
+</style>
+
+<div class="form-container">
+
+    {% if form.errors %}
+<div class="alert alert-danger mt-3">
+  <strong>⚠️ Form Errors:</strong>
+  <ul>
+    {% for field, errors in form.errors.items %}
+      <li><strong>{{ field }}:</strong> {{ errors|join:", " }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
+
+    <h2>Create New Event</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.title.label_tag }} {{ form.title }}
+        {{ form.description.label_tag }} {{ form.description }}
+        {{ form.category.label_tag }} {{ form.category }}
+        {{ form.host.label_tag }} {{ form.host }}
+        {{ form.special_attractions.label_tag }} {{ form.special_attractions }}
+        {{ form.date.label_tag }} {{ form.date }}
+        {{ form.time.label_tag }} {{ form.time }}
+        {{ form.end_time.label_tag }} {{ form.end_time }}
+
+
+        <!-- Location Section -->
+        {{ form.location.label_tag }}
+        <input type="text" id="location-input" name="location" class="form-control" placeholder="Search Gujarat location..." autocomplete="off">
+        <ul id="suggestions"></ul>
+
+        <div id="map"></div>
+        {{ form.latitude }}
+        {{ form.longitude }}
+
+        {{ form.capacity.label_tag }} {{ form.capacity }}
+
+        {{ form.price.label_tag }} {{ form.price }}
+        {{ form.terms_and_conditions.label_tag }} {{ form.terms_and_conditions }}
+        {{ form.registration_deadline.label_tag }} {{ form.registration_deadline }}
+        {{ form.banner.label_tag }} {{ form.banner }}
+
+        <button type="submit">Create</button>
+    </form>
+</div>
+
+<!-- Leaflet CSS/JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // 📍 Default: Bhavnagar, Gujarat
+    var defaultLat = 21.7645;
+    var defaultLng = 72.1519;
+
+    var map = L.map("map").setView([defaultLat, defaultLng], 9);
+
+    // OpenStreetMap tiles
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Restrict map view to Gujarat bounds
+    var gujaratBounds = [
+        [20.127, 68.176],   // Southwest (approx)
+        [24.705, 74.476]    // Northeast (approx)
+    ];
+    map.setMaxBounds(gujaratBounds);
+    map.on("drag", function () { map.panInsideBounds(gujaratBounds, { animate: false }); });
+
+    // Marker
+    var marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+    // Hidden inputs init
+    document.getElementById("id_latitude").value = defaultLat;
+    document.getElementById("id_longitude").value = defaultLng;
+
+    function setLatLng(lat, lng) {
+        document.getElementById("id_latitude").value = lat;
+        document.getElementById("id_longitude").value = lng;
+    }
+
+    // Map click
+    map.on("click", function (e) {
+        marker.setLatLng(e.latlng);
+        setLatLng(e.latlng.lat, e.latlng.lng);
+    });
+
+    // Drag marker
+    marker.on("dragend", function (e) {
+        var latlng = e.target.getLatLng();
+        setLatLng(latlng.lat, latlng.lng);
+    });
+
+    // Location search restricted to Gujarat
+    var input = document.getElementById("location-input");
+    var suggestions = document.getElementById("suggestions");
+
+    input.addEventListener("input", function () {
+        var query = input.value.trim();
+        if (query.length < 3) {
+            suggestions.style.display = "none";
+            return;
+        }
+
+        // 🔑 Gujarat-only search using viewbox + bounded=1
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&countrycodes=IN&viewbox=68.176,24.705,74.476,20.127&bounded=1&limit=5&q=${encodeURIComponent(query)}`)
+            .then(response => response.json())
+            .then(data => {
+                suggestions.innerHTML = "";
+                if (data.length === 0) {
+                    suggestions.style.display = "none";
+                    return;
+                }
+
+                data.forEach(place => {
+                    var li = document.createElement("li");
+                    li.textContent = place.display_name;
+                    li.addEventListener("click", function () {
+                        input.value = place.display_name;
+                        marker.setLatLng([place.lat, place.lon]);
+                        map.setView([place.lat, place.lon], 14);
+                        setLatLng(place.lat, place.lon);
+                        suggestions.style.display = "none";
+                    });
+                    suggestions.appendChild(li);
+                });
+                suggestions.style.display = "block";
+            });
+    });
+
+    // Hide suggestions when clicked outside
+    document.addEventListener("click", function (e) {
+        if (e.target !== input) {
+            suggestions.style.display = "none";
+        }
+    });
+});
+</script>
+{% endblock %}

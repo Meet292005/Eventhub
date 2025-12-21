@@ -1,0 +1,373 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        .eh-prof-object-tools-wrapper {
+            max-width: 1320px;
+            margin: 12px auto 0;
+            padding: 0 12px;
+        }
+
+        .eh-prof-object-tools-wrapper .object-tools {
+            float: right;
+            margin: 0 0 6px;
+        }
+
+        .eh-prof-shell {
+            max-width: 1320px;
+            margin: 8px auto 0;
+            padding: 0 12px 24px;
+        }
+
+        .eh-prof-summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #b1b5bd;
+            margin-bottom: 10px;
+        }
+
+        .eh-prof-actions {
+            margin-bottom: 14px;
+            font-size: 12px;
+        }
+
+        .eh-prof-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 26px;
+        }
+
+        .eh-prof-card-wrap {
+            position: relative;
+        }
+
+        .eh-prof-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .eh-prof-card {
+            background: radial-gradient(circle at top,
+                        rgba(43, 26, 18, 0.96) 0,
+                        #050505 60%);
+            border-radius: 22px;
+            padding: 18px 18px 16px;
+            border: 1px solid #2b1a12;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.9);
+            display: grid;
+            grid-template-columns: 70px minmax(0, 1fr);
+            column-gap: 18px;
+            row-gap: 10px;
+            align-items: center;
+            transition: 0.16s ease;
+            color: #fafafa;
+        }
+
+        .eh-prof-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 1);
+            border-color: rgba(255, 152, 0, 0.8);
+            background: radial-gradient(circle at top left,
+                        rgba(70, 37, 22, 1) 0,
+                        #050505 70%);
+        }
+
+        .eh-prof-avatar {
+            width: 66px;
+            height: 66px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #111;
+            border: 1px solid #2b1a12;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 24px;
+            color: #ffb74d;
+            box-shadow: 0 0 14px rgba(255, 152, 0, 0.6);
+        }
+
+        .eh-prof-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .eh-prof-name-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .eh-prof-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .eh-prof-role-pill {
+            padding: 3px 12px 4px;
+            border-radius: 999px;
+            background: rgba(255, 152, 0, 0.18);
+            border: 1px solid rgba(255, 152, 0, 0.65);
+            font-size: 11px;
+            letter-spacing: 0.12em;
+            color: #ffddb0;
+            flex-shrink: 0;
+        }
+
+        .eh-prof-email,
+        .eh-prof-phone {
+            font-size: 12px;
+            color: #d1d5db;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin-top: 2px;
+        }
+
+        .eh-prof-email .icon,
+        .eh-prof-phone .icon {
+            margin-right: 4px;
+        }
+
+        .eh-prof-meta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #9ca3af;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .eh-prof-badge {
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid #374151;
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .eh-prof-active {
+            border-color: rgba(34, 197, 94, 0.85);
+            background: rgba(21, 128, 61, 0.28);
+            color: #bbf7d0;
+        }
+
+        /* Stats row for bookings / events */
+        .eh-prof-stats {
+            margin-top: 6px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .eh-prof-stat-label {
+            font-size: 11px;
+            color: #e5e7eb;
+        }
+
+        .eh-prof-stat-btn {
+            font-size: 10px;
+            padding: 3px 9px;
+            border-radius: 999px;
+            border: 1px solid rgba(249, 115, 22, 0.9);
+            background: rgba(249, 115, 22, 0.14);
+            text-decoration: none;
+            color: #fed7aa;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .eh-prof-stat-btn:hover {
+            background: rgba(249, 115, 22, 0.28);
+        }
+
+        .eh-prof-checkbox {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            transform: scale(1);
+            z-index: 2;
+        }
+
+        @media (max-width: 560px) {
+            .eh-prof-object-tools-wrapper,
+            .eh-prof-shell {
+                padding: 0 8px 20px;
+            }
+            .eh-prof-card {
+                grid-template-columns: 54px minmax(0, 1fr);
+            }
+            .eh-prof-avatar {
+                width: 54px;
+                height: 54px;
+                font-size: 20px;
+            }
+        }
+    </style>
+{% endblock extrastyle %}
+
+{% block object-tools %}
+    <div class="eh-prof-object-tools-wrapper">
+        {{ block.super }}
+    </div>
+{% endblock object-tools %}
+
+{% block result_list %}
+<div class="eh-prof-shell">
+
+    <div class="eh-prof-summary">
+        <span>
+            {% blocktrans count cl.result_count as counter %}
+                {{ counter }} profile
+            {% plural %}
+                {{ counter }} profiles
+            {% endblocktrans %}
+        </span>
+        {% if cl.result_count != cl.full_result_count %}
+            <span>
+                {% blocktrans with full_result_count=cl.full_result_count %}
+                    (showing {{ cl.result_count }} of {{ full_result_count }})
+                {% endblocktrans %}
+            </span>
+        {% endif %}
+    </div>
+
+    {% if cl.result_count %}
+        {% if action_form and cl.show_admin_actions %}
+            <form id="changelist-form" method="post" novalidate>
+                {% csrf_token %}
+                {{ action_form.management_form }}
+                {% if cl.formset %}
+                    {{ cl.formset.management_form }}
+                {% endif %}
+
+                <div class="eh-prof-actions">
+                    {% admin_actions %}
+                </div>
+        {% endif %}
+
+        <div class="eh-prof-grid">
+            {% for res in cl.result_list %}
+                {# 🔗 OPEN USER EDIT PAGE, NOT PROFILE PAGE #}
+                {% url opts|admin_urlname:'change' res.user.pk as change_url %}
+
+                <div class="eh-prof-card-wrap">
+                    {% if action_form and cl.show_admin_actions %}
+                        <input type="checkbox"
+                               class="action-select eh-prof-checkbox"
+                               value="{{ res.pk }}"
+                               name="_selected_action">
+                    {% endif %}
+
+                    <a href="{{ change_url }}" class="eh-prof-card-link">
+                        <div class="eh-prof-card">
+                            <div class="eh-prof-avatar">
+                                {# ✅ Avatar priority: Customer image → Organizer logo → initial #}
+                                {% if res.user.customer.image %}
+                                    <img src="{{ res.user.customer.image.url }}" alt="{{ res.user }}">
+                                {% elif res.user.organizer.logo %}
+                                    <img src="{{ res.user.organizer.logo.url }}" alt="{{ res.user }}">
+                                {% else %}
+                                    {% with label=res.user.get_full_name|default:res.user.username|default:res|stringformat:"s" %}
+                                        {{ label|first|upper }}
+                                    {% endwith %}
+                                {% endif %}
+                            </div>
+
+                            <div class="eh-prof-main">
+                                <div class="eh-prof-name-row">
+                                    <div class="eh-prof-name">
+                                        {{ res.user.get_full_name|default:res.user.username|default:res }}
+                                    </div>
+
+                                    {% if res.role %}
+                                        <span class="eh-prof-role-pill">
+                                            {{ res.role|upper }}
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                {% if res.user.email %}
+                                    <div class="eh-prof-email">
+                                        <span class="icon">✉</span>{{ res.user.email }}
+                                    </div>
+                                {% endif %}
+
+                                {% if res.phone or res.mobile %}
+                                    <div class="eh-prof-phone">
+                                        <span class="icon">📱</span>
+                                        {{ res.phone|default:res.mobile }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="eh-prof-meta">
+                                    {% if res.created_at %}
+                                        <span class="eh-prof-badge">
+                                            Joined {{ res.created_at|date:"d M Y" }}
+                                        </span>
+                                    {% endif %}
+                                    {% if res.user.last_login %}
+                                        <span class="eh-prof-badge">
+                                            Last login {{ res.user.last_login|date:"d M Y" }}
+                                        </span>
+                                    {% endif %}
+                                    {% if res.user.is_active %}
+                                        <span class="eh-prof-badge eh-prof-active">
+                                            ACTIVE
+                                        </span>
+                                    {% else %}
+                                        <span class="eh-prof-badge">
+                                            INACTIVE
+                                        </span>
+                                    {% endif %}
+                                </div>
+
+                                <div class="eh-prof-stats">
+                                    {% if res.booking_count %}
+                                        <span class="eh-prof-stat-label">
+                                            🎫 Bookings: {{ res.booking_count }}
+                                        </span>
+                                        <a href="{{ booking_changelist_base }}?customer__id__exact={{ res.user.id }}"
+                                           class="eh-prof-stat-btn">
+                                            VIEW BOOKINGS
+                                        </a>
+                                    {% endif %}
+
+                                    {% if res.event_count %}
+                                        <span class="eh-prof-stat-label">
+                                            🎟 Events: {{ res.event_count }}
+                                        </span>
+                                        <a href="{{ event_changelist_base }}?organizer__id__exact={{ res.user.organizer.id }}"
+                                           class="eh-prof-stat-btn">
+                                            VIEW EVENTS
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if action_form and cl.show_admin_actions %}
+            </form>
+        {% endif %}
+    {% else %}
+        <p>{% trans "No profiles available." %}</p>
+    {% endif %}
+</div>
+{% endblock result_list %}

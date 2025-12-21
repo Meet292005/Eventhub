@@ -1,0 +1,417 @@
+{% extends "admin/change_list.html" %}
+{% load admin_list admin_urls i18n %}
+
+{# ---------- Extra CSS only for Booking changelist ---------- #}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Shell to align cards + Add button */
+        .eh-book-shell,
+        .eh-book-object-tools-shell {
+            max-width: 1320px;
+            margin: 16px auto 0;
+            padding: 0 4px;
+        }
+
+        .eh-book-object-tools-shell {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+            margin-bottom: 6px;
+        }
+
+        .eh-book-object-tools-shell .object-tools {
+            float: none;
+            margin: 0;
+        }
+
+        /* Cards grid */
+        .eh-book-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 22px;
+            margin-bottom: 18px;
+        }
+
+        .eh-book-card {
+            background: radial-gradient(circle at top,
+                        rgba(34, 19, 11, 0.95) 0,
+                        #050505 55%);
+            border-radius: 20px;
+            border: 1px solid #2b1a12;
+            box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85);
+            padding: 16px 16px 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.18s ease,
+                        box-shadow 0.18s ease,
+                        border-color 0.18s ease;
+        }
+
+        .eh-book-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.95);
+            border-color: #ff9800;
+        }
+
+        .eh-book-card-inner {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        /* Header: checkbox + event + booking name + status */
+        .eh-book-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .eh-book-main {
+            display: flex;
+            gap: 8px;
+            align-items: flex-start;
+            flex: 1;
+        }
+
+        .eh-book-main .eh-check {
+            margin-top: 4px;
+        }
+
+        .eh-book-main .eh-check input[type="checkbox"] {
+            transform: scale(1.1);
+            cursor: pointer;
+        }
+
+        .eh-book-title {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .eh-event-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffd28a;
+        }
+        .eh-event-name a {
+            color: #ffd28a;
+            text-decoration: none;
+        }
+        .eh-event-name a:hover {
+            color: #ffe082;
+            text-decoration: underline;
+        }
+
+        .eh-booking-name {
+            font-size: 12px;
+            color: #b0a290;
+        }
+
+        .eh-book-email {
+            font-size: 11px;
+            color: #8c7b68;
+        }
+
+        /* Status badge */
+        .eh-status-badge {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+            border: 1px solid;
+            text-align: right;
+        }
+
+        .eh-status-paid {
+            background: rgba(76, 175, 80, 0.12);
+            color: #a5d6a7;
+            border-color: rgba(76, 175, 80, 0.7);
+        }
+
+        .eh-status-pending {
+            background: rgba(255, 193, 7, 0.14);
+            color: #ffe082;
+            border-color: rgba(255, 193, 7, 0.8);
+        }
+
+        .eh-status-canceled {
+            background: rgba(244, 67, 54, 0.13);
+            color: #ef9a9a;
+            border-color: rgba(244, 67, 54, 0.8);
+        }
+
+        /* Refund badge (small) */
+        .eh-refund-badge {
+            font-size: 10px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            border: 1px solid;
+            margin-top: 4px;
+            display: inline-block;
+        }
+
+        .eh-refund-pending {
+            background: rgba(255, 193, 7, 0.08);
+            color: #ffe082;
+            border-color: rgba(255, 193, 7, 0.8);
+        }
+
+        .eh-refund-refunded {
+            background: rgba(33, 150, 243, 0.08);
+            color: #90caf9;
+            border-color: rgba(33, 150, 243, 0.8);
+        }
+
+        .eh-refund-failed {
+            background: rgba(244, 67, 54, 0.1);
+            color: #ef9a9a;
+            border-color: rgba(244, 67, 54, 0.8);
+        }
+
+        /* Middle rows: meta info */
+        .eh-book-meta-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 11px;
+            color: #b0a290;
+        }
+
+        .eh-book-meta-row div {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .eh-label {
+            font-size: 10px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #7a6a58;
+        }
+
+        .eh-value {
+            font-size: 12px;
+            color: #e6d5c2;
+        }
+
+        .eh-value-strong {
+            font-size: 13px;
+            font-weight: 600;
+            color: #ffb74d;
+        }
+
+        .eh-token-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #8c7b68;
+            margin-top: 4px;
+        }
+
+        .eh-token-row span.positive {
+            color: #a5d6a7;
+        }
+
+        .eh-token-row span.negative {
+            color: #ef9a9a;
+        }
+
+        @media (max-width: 800px) {
+            .eh-book-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{# ---------- Align "Add booking" button ---------- #}
+{% block object-tools %}
+    {% if has_add_permission %}
+        <div class="eh-book-object-tools-shell">
+            <ul class="object-tools">
+                <li>
+                    <a href="{% url cl.opts|admin_urlname:'add' %}" class="addlink">
+                        {% blocktrans with cl.opts.verbose_name as name %}Add {{ name }}{% endblocktrans %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+    {% endif %}
+{% endblock %}
+
+{# ---------- Replace only the object list with cards ---------- #}
+{% block result_list %}
+    {% if cl.formset %}
+        {{ block.super }}
+    {% else %}
+        {# top bulk actions #}
+        {% if action_form and actions_on_top and cl.full_result_count %}
+            {% admin_actions %}
+        {% endif %}
+
+        <div class="eh-book-shell">
+            <div class="eh-book-grid">
+                {% for obj in cl.result_list %}
+                    <div class="eh-book-card">
+                        <div class="eh-book-card-inner">
+
+                            <div class="eh-book-header">
+                                <div class="eh-book-main">
+                                    <div class="eh-check">
+                                        <input type="checkbox"
+                                               name="_selected_action"
+                                               value="{{ obj.pk|admin_urlquote }}">
+                                    </div>
+
+                                    <div class="eh-book-title">
+                                        <div class="eh-event-name">
+                                            <a href="{% url cl.opts|admin_urlname:'change' obj.pk|admin_urlquote %}">
+                                                {% if obj.event %}
+                                                    {{ obj.event.title }}
+                                                {% else %}
+                                                    Booking #{{ obj.pk }}
+                                                {% endif %}
+                                            </a>
+                                        </div>
+
+                                        <div class="eh-booking-name">
+                                            {{ obj.booking_name|default:"(Guest booking)" }}
+                                        </div>
+
+                                        <div class="eh-book-email">
+                                            {{ obj.customer_email }}
+                                            {% if obj.customer_phone %}
+                                                · {{ obj.customer_phone }}
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    {# Payment status badge #}
+                                    {% if obj.payment_status == "paid" %}
+                                        <div class="eh-status-badge eh-status-paid">
+                                            Paid
+                                        </div>
+                                    {% elif obj.payment_status == "pending" %}
+                                        <div class="eh-status-badge eh-status-pending">
+                                            Pending
+                                        </div>
+                                    {% else %}
+                                        <div class="eh-status-badge eh-status-canceled">
+                                            Canceled
+                                        </div>
+                                    {% endif %}
+
+                                    {# Refund badge #}
+                                    {% if obj.refund_status != "not_applicable" %}
+                                        {% if obj.refund_status == "pending" %}
+                                            <div class="eh-refund-badge eh-refund-pending">
+                                                Refund pending
+                                            </div>
+                                        {% elif obj.refund_status == "refunded" %}
+                                            <div class="eh-refund-badge eh-refund-refunded">
+                                                Refunded{% if obj.refund_amount %} ₹{{ obj.refund_amount }}{% endif %}
+                                            </div>
+                                        {% elif obj.refund_status == "failed" %}
+                                            <div class="eh-refund-badge eh-refund-failed">
+                                                Refund failed
+                                            </div>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="eh-book-meta-row">
+                                <div>
+                                    <div class="eh-label">Tickets</div>
+                                    <div class="eh-value">
+                                        {{ obj.tickets_booked }}
+                                        {% if obj.canceled_tickets %}
+                                            ({{ obj.canceled_tickets }} canceled)
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="eh-label">Amount</div>
+                                    <div class="eh-value-strong">
+                                        {% if obj.total_price %}
+                                            ₹{{ obj.total_price }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="eh-label">Booked on</div>
+                                    <div class="eh-value">
+                                        {{ obj.booking_date|date:"d M Y" }}<br>
+                                        {{ obj.booking_date|time:"H:i" }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="eh-book-meta-row">
+                                <div>
+                                    <div class="eh-label">Payment method</div>
+                                    <div class="eh-value">
+                                        {{ obj.payment_method|default:"—" }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="eh-label">Razorpay link</div>
+                                    <div class="eh-value">
+                                        {{ obj.razorpay_link_id|default:"—"|truncatechars:14 }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="eh-label">Razorpay payment</div>
+                                    <div class="eh-value">
+                                        {{ obj.razorpay_payment_id|default:"—"|truncatechars:14 }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="eh-token-row">
+                                <div>
+                                    HUB used:
+                                    <span class="{% if obj.hub_tokens_used %}negative{% endif %}">
+                                        {{ obj.hub_tokens_used }}
+                                    </span>
+                                    · earned:
+                                    <span class="{% if obj.hub_tokens_awarded %}positive{% endif %}">
+                                        {{ obj.hub_tokens_awarded }}
+                                    </span>
+                                </div>
+                                <div>
+                                    {% if obj.attended %}
+                                        ✅ Attended
+                                    {% else %}
+                                        ⏳ Not marked attended
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                {% empty %}
+                    <p>{% trans "No bookings available." %}</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# bottom bulk actions #}
+        {% if action_form and actions_on_bottom and cl.full_result_count %}
+            {% admin_actions %}
+        {% endif %}
+    {% endif %}
+{% endblock %}

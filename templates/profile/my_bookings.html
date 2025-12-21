@@ -1,0 +1,160 @@
+{% extends "profile/base_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-white mb-4">📅 My Bookings</h2>
+
+    {% if bookings %}
+    <div class="row g-4">
+        {% for booking in bookings %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card booking-card h-100 text-white">
+                <!-- Event Banner -->
+                <div class="position-relative">
+                    <img src="{{ booking.event.banner.url }}" class="card-img-top" alt="{{ booking.event.title }}"
+                        style="height:200px; object-fit:cover; border-top-left-radius:15px; border-top-right-radius:15px;">
+                    <div class="overlay position-absolute top-0 start-0 w-100 h-100 rounded-top"
+                        style="background: rgba(0,0,0,0.45);"></div>
+                    <h5 class="card-title position-absolute bottom-0 start-0 m-3">{{ booking.event.title }}</h5>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body d-flex flex-column"
+                    style="background-color: #1a1a1a; border-bottom-left-radius:15px; border-bottom-right-radius:15px;">
+
+                    <!-- Event Info -->
+                    <p class="mb-1"><strong>Date:</strong> {{ booking.event.date|date:"D, d M Y" }}</p>
+                    <p class="mb-1"><strong>Time:</strong> {{ booking.event.time|time:"h:i A" }}</p>
+
+                    <!-- Ticket Info -->
+                    <p class="mb-1"><strong>Tickets Booked:</strong> {{ booking.tickets_booked }}</p>
+                    <p class="mb-1 text-success"><strong>Active Tickets:</strong> {{ booking.active_tickets }}</p>
+                    {% if booking.canceled_tickets > 0 %}
+                    <p class="mb-1 text-warning"><strong>Canceled:</strong> {{ booking.canceled_tickets }}</p>
+                    {% endif %}
+
+
+                    <p class="mb-2"><strong>Total:</strong> ₹{{ booking.total_price }}</p>
+
+                    <!-- Payment Status -->
+                    <p class="mb-2">
+                        <strong>Status:</strong>
+                        {% if booking.payment_status == "paid" %}
+                        <span class="badge bg-success">Paid</span>
+                        {% elif booking.payment_status == "canceled" %}
+                        <span class="badge bg-warning text-dark">Canceled</span>
+                        {% elif booking.payment_status == "refunded" %}
+                        <span class="badge bg-info text-dark">💸 Refunded</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Pending</span>
+                        {% endif %}
+                    </p>
+
+                    <!-- Refund Info -->
+                    {% if booking.refund_amount %}          
+                    <hr class="bg-secondary">
+                    <p class="mb-1"><strong>Refund Status:</strong>
+                        {% if booking.refund_status == "processed" %}
+                        <span class="text-warning">Processed</span>
+                        {% elif booking.refund_status == "refunded" %}
+                        <span class="text-success">Refunded</span>
+                        {% elif booking.refund_status == "failed" %}
+                        <span class="text-danger">Failed</span>
+                        {% else %}
+                        <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+
+                    {% if booking.refund_amount %}
+                    <p class="mb-1"><strong>Refund Amount:</strong> ₹{{ booking.refund_amount }}</p>
+                    {% endif %}
+                    {% endif %}
+
+                    <!-- Payment Method -->
+                    <p class="mb-2">
+                        <strong>Payment Method:</strong>
+                        {% if booking.payment_method %}
+                        {% if "card" in booking.payment_method|lower %}
+                        <i class="bi bi-credit-card-2-front-fill"></i> {{ booking.payment_method }}
+                        {% elif "upi" in booking.payment_method|lower %}
+                        <i class="bi bi-phone"></i> {{ booking.payment_method }}
+                        {% else %}
+                        <i class="bi bi-wallet2"></i> {{ booking.payment_method }}
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </p>
+
+                    <p class="card-text"><small>Booked on {{ booking.booking_date|date:"D, d M Y h:i A" }}</small></p>
+
+                    <!-- Actions -->
+                    <div class="mt-auto d-flex justify-content-between flex-wrap">
+                        {% if booking.payment_status == "paid" %}
+                        <a href="{% url 'ticket_view' booking.id %}" class="btn btn-sm btn-outline-info mb-1">🎟️
+                            Ticket</a>
+
+                        {% if booking.tickets_booked > booking.canceled_tickets %}
+                        <a href="{% url 'cancel_tickets' booking.id %}" class="btn btn-sm btn-outline-danger mb-1">
+                            ❌ Cancel Tickets
+                        </a>
+                        {% endif %}
+                        {% else %}
+                        <span class="text-muted">No actions</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center">
+        You have no bookings yet. Explore events and start booking! 🎫
+    </div>
+    {% endif %}
+</div>
+
+<!-- Styling -->
+<style>
+    .booking-card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .booking-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(255, 165, 0, 0.5);
+    }
+
+    .booking-card .overlay {
+        transition: background 0.3s;
+    }
+
+    .booking-card:hover .overlay {
+        background: rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-outline-info {
+        border-color: #17a2b8;
+        color: #17a2b8;
+    }
+
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        color: #fff;
+    }
+
+    .btn-outline-danger {
+        border-color: #dc3545;
+        color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: #fff;
+    }
+</style>
+{% endblock %}

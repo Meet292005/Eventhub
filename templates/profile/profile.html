@@ -1,0 +1,242 @@
+{% extends "profile/base_dashboard.html" %}
+{% block content %}
+<style>
+  body {
+    background-color: #121212;
+    color: white;
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .profile-header img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+  }
+
+  .profile-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  }
+
+  .profile-label {
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .profile-value {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .dashboard-section {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.1);
+  }
+
+  .dashboard-section h4 {
+    color: #ffc107;
+    margin-bottom: 1rem;
+  }
+
+  .event-card {
+    background: linear-gradient(145deg, #2a2a2a, #1c1c1c);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+  }
+
+  .event-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
+  }
+
+  .btn-orange {
+    background-color: #ff6a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 15px;
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .btn-orange:hover {
+    background-color: #ff812b;
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .profile-header img {
+      margin-bottom: 1rem;
+    }
+
+    .event-card {
+      text-align: center;
+    }
+
+    .btn-orange:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .dob-select-group > div {
+      width: 100% !important;
+    }
+  }
+</style>
+
+<div class="container px-3 px-md-4">
+  <div class="text-center mb-4">
+    <h3 class="text-warning fw-bold">👤 Your Profile</h3>
+    <p class="text-light">Here is your saved information</p>
+  </div>
+
+  <div class="profile-header mb-4">
+    {% if user.customer.image %}
+      <img src="{{ user.customer.image.url }}" alt="Profile Image">
+    {% else %}
+      <img src="{{ MEDIA_URL }}profile_pics/default.jpg" alt="Default Image">
+    {% endif %}
+
+    <div>
+      <h4 class="text-light mb-1">{{ user.first_name|default:user.username }}</h4>
+      <p class="text-light mb-0">{{ user.email }}</p>
+    </div>
+  </div>
+
+  <div class="profile-card mb-5">
+       <div class="row g-3">
+      <div class="col-md-6">
+        <span class="profile-label">Phone Number</span><br>
+        <span class="profile-value">{{ user.customer.phone|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">City</span><br>
+        <span class="profile-value">{{ user.customer.city|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">State</span><br>
+        <span class="profile-value">{{ user.customer.state|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Language</span><br>
+        <span class="profile-value">{{ user.customer.language|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Interests</span><br>
+        <span class="profile-value">{{ user.customer.interests|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Date Of Birth</span><br>
+        <span class="profile-value">{{ user.customer.dob|default:"—" }}</span>
+      </div>
+      <div class="col-12">
+        <span class="profile-label">Address</span><br>
+        <span class="profile-value">{{ user.customer.address|default:"—" }}</span>
+      </div>
+
+    <div class="col-12 text-center" style="margin: 15px 0;">
+    <div style="
+        display: inline-block;
+        background-color: #2a2a2a;
+        color: #ff9900;
+        font-weight: 600;
+        font-size: 1.2rem;
+        padding: 8px 20px;
+        border-radius: 50px;
+        border: 2px solid #ff9900;
+        box-shadow: 0 0 8px rgba(255, 153, 0, 0.4);
+        transition: transform 0.2s;
+    " 
+    onmouseover="this.style.transform='scale(1.05)';" 
+    onmouseout="this.style.transform='scale(1)';">
+        HUB TOKEN 🪙 :  {{ user.profile.hub_tokens|default:"0" }}
+    </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Upcoming Events -->
+  <div class="dashboard-section mb-4">
+    <h4>📅 Upcoming Events</h4>
+    <div class="row g-3">
+      {% if upcoming_bookings %}
+        {% for booking in upcoming_bookings %}
+        <div class="col-md-4">
+          <div class="card bg-dark text-white shadow-lg rounded-3 p-3 h-100">
+            <h5>{{ booking.event.title }}</h5>
+            <p>{{ booking.event.date }} <br> {{ booking.event.city }}</p>
+            <a href="{% url 'ticket_view' booking.id %}" class="btn btn-orange">🎟 View Ticket</a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="">You haven’t booked any upcoming events.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Saved Events -->
+  <div class="dashboard-section mb-4">
+    <h4>💾 Saved Events</h4>
+    <div class="row g-3">
+      {% if saved_events %}
+        {% for saved in saved_events %}
+        <div class="col-md-4">
+          <div class="card bg-dark text-white shadow-lg rounded-3 p-3 h-100 d-flex flex-column justify-content-between">
+            <div>
+              <h5>{{ saved.event.title }}</h5>
+              <p>{{ saved.event.date }} <br> {{ saved.event.city }}</p>
+            </div>
+            <a href="{% url 'remove_saved_event' saved.event.id %}" class="btn btn-danger mt-2">❌ Remove</a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="">No saved events yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Suggested Events -->
+  <div class="dashboard-section">
+    <h4>✨ Event Suggestions</h4>
+    <div class="row g-3">
+      {% if suggested_events %}
+        {% for event in suggested_events %}
+        <div class="col-md-4">
+          <div class="card bg-dark text-white shadow-lg rounded-3 p-3 h-100">
+            <h5>{{ event.title }}</h5>
+            <p>{{ event.date }} <br> {{ event.city }}</p>
+            <a href="{% url 'user_event_detail' event.id %}" class="btn btn-orange">🔍 View Details</a>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <p class="">No suggestions right now.</p>
+      {% endif %}
+    </div>
+  </div>
+
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends "nav.html" %}
+{% block content %}
+<div class="container text-center mt-5">
+    <h3 class="mb-4">💳 Scan to Pay for Booking</h3>
+    
+    <div class="mb-3">
+        <p><strong>Booking Name:</strong> {{ booking.booking_name }}</p>
+
+        {% if booking.hub_tokens_used and booking.hub_tokens_used > 0 %}
+            <p>
+                <strong>Original Amount:</strong> 
+                <span style="text-decoration: line-through; color: #999;">
+                    ₹{{ booking.total_price }}
+                </span>
+            </p>
+            <p>
+                <strong>Tokens Used:</strong> {{ booking.hub_tokens_used }} HUB
+            </p>
+            <p>
+                <strong>Final Amount to Pay:</strong> 
+                <span class="text-warning fw-bold">
+                    ₹{{ final }}
+                </span>
+            </p>
+        {% else %}
+            <p><strong>Total Amount:</strong> ₹{{ booking.total_price }}</p>
+        {% endif %}
+    </div>
+
+    <!-- QR Code -->
+    <div class="mb-4">
+        <img src="data:image/png;base64,{{ qr_code }}" 
+             alt="Scan QR to Pay" 
+             style="width:300px;height:300px;border:2px solid #f0ad4e;border-radius:10px;"/>
+    </div>
+
+    <!-- Pay Here Button -->
+    <div>
+        <a href="{{ payment_link }}" target="_blank" 
+           class="btn btn-warning btn-lg text-white text-decoration-none">
+           Pay Here 💰
+        </a>
+    </div>
+
+    <p class="mt-3">You can either scan the QR code or click the button above to complete your payment.</p>
+</div>
+{% endblock %}

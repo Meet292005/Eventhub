@@ -1,0 +1,93 @@
+{% extends "nav.html" %}
+
+{% block title %} Book Event {% endblock %}
+
+{% block content %}
+<style>
+    body {
+        background-color: #121212;
+        color: #ffffff;
+    }
+
+    .booking-container {
+        max-width: 600px;
+        margin: 50px auto;
+        padding: 30px;
+        background-color: #1e1e1e;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .booking-container h2 {
+        color: #ff9900;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .form-label {
+        font-weight: 600;
+        margin-top: 10px;
+    }
+
+    .form-control {
+        background-color: #2a2a2a;
+        color: #fff;
+        border: 1px solid #444;
+        border-radius: 8px;
+    }
+
+    .form-control:focus {
+        background-color: #2a2a2a;
+        color: #fff;
+        border-color: #ff9900;
+        box-shadow: 0 0 5px #ff9900;
+    }
+
+    .btn-book {
+        background-color: #ff9900;
+        color: #121212;
+        font-weight: bold;
+        border-radius: 10px;
+        width: 100%;
+        margin-top: 20px;
+    }
+
+    .btn-book:hover {
+        background-color: #e68a00;
+    }
+
+    .event-info {
+        margin-bottom: 20px;
+        font-size: 16px;
+        color: #cccccc;
+    }
+
+    .text-secondary {
+        color: #cccccc !important;
+    }
+</style>
+
+<div class="booking-container">
+    <h2>Book Tickets for "{{ event.title }}"</h2>
+
+    <p class="event-info">
+        Date: {{ event.date }} <br>
+        Time: {{ event.time }} <br>
+        Location: {{ event.location }} <br>
+        Price per ticket: ₹{{ event.price }}
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        {% for field in form %}
+            <label class="form-label">{{ field.label_tag }}</label>
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger">{{ field.errors }}</div>
+            {% endif %}
+        {% endfor %}
+
+        <button type="submit" class="btn btn-book">Book Now</button>
+    </form>
+</div>
+{% endblock %}

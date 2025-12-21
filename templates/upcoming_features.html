@@ -1,0 +1,220 @@
+{% extends "nav.html" %}
+
+{% block title %}Upcoming Features | EventHub{% endblock %}
+
+{% block content %}
+
+<style>
+/* ================= UPCOMING FEATURES ================= */
+.upcoming-features {
+  max-width: 900px;
+  margin: 60px auto;
+  background: rgba(0,0,0,0.65);
+  border-radius: 18px;
+  padding: 30px;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+}
+
+.upcoming-features h1 {
+  text-align: center;
+  color: #ffcc66;
+  font-weight: 800;
+  margin-bottom: 25px;
+}
+
+.uf-item {
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  padding: 16px 0;
+}
+
+.uf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.05rem;
+}
+
+.uf-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.uf-plus {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg,#ffcc66,#ff9900);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.uf-item.active .uf-plus {
+  transform: rotate(45deg);
+}
+
+.uf-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.uf-item.active .uf-body {
+  max-height: 220px;
+}
+
+/* COMING SOON BADGE */
+.coming-soon {
+  background: rgba(255,153,0,0.15);
+  color: #ffb347;
+  border: 1px solid rgba(255,153,0,0.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+</style>
+
+<section class="upcoming-features">
+  <h1>🚀 Upcoming Features</h1>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>📺 YouTube Live Event Streaming</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Watch concerts, seminars, and workshops live on EventHub using YouTube Live integration.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>📞 AI Calling Agent</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      AI voice assistant for booking confirmation, event reminders, and cancellation support.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>🎫 Event Store</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Buy official event merchandise, VIP passes, and exclusive digital content.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>🛍️ Merchant Store</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Vendors and organizers can sell food, accessories, and services directly on EventHub.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>📍 Smart Location-Based Events</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Automatically discover nearby events using live GPS and city-based filtering.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>🎙️ Voice-Controlled Booking</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Book tickets, ask event details, and cancel bookings using voice commands.
+    </div>
+  </div>
+
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>🛡️ Verified Organizer Badge</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Identity-verified organizers get higher visibility, trust badge, and priority listing.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>📆 Event Subscription & Auto-Booking</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      Subscribe to favorite organizers or categories and auto-book upcoming events.
+    </div>
+  </div>
+
+  <div class="uf-item">
+    <div class="uf-header">
+      <span>🌐 Multi-Language Support</span>
+      <div class="uf-right">
+        <span class="coming-soon">Coming Soon</span>
+        <span class="uf-plus">+</span>
+      </div>
+    </div>
+    <div class="uf-body">
+      EventHub will support Hindi, Gujarati, and other Indian languages for better accessibility.
+    </div>
+  </div>
+
+
+</section>
+
+<script>
+document.querySelectorAll(".uf-header").forEach(header => {
+  header.addEventListener("click", () => {
+    header.parentElement.classList.toggle("active");
+  });
+});
+</script>
+
+{% endblock %}

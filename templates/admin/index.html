@@ -1,0 +1,346 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+/* ================= MAIN ================= */
+.eh-main {
+    width: 100%;
+    max-width: none;
+    margin: 4px 0 0 115px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ================= TOP BAR ================= */
+.eh-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+
+.eh-topbar-title {
+    font-size: 22px;
+    font-weight: 700;
+}
+
+/* ================= USER ================= */
+.eh-user-pill {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #0d0805;
+    border-radius: 999px;
+    padding: 4px 10px;
+    border: 1px solid #3a2b20;
+}
+
+.eh-user-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    background: radial-gradient(circle at 30% 30%, #ffe082, #ff9800 55%, #6a1b0b 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1b1308;
+}
+
+.eh-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+}
+
+.eh-user-name {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.eh-user-role {
+    font-size: 10px;
+    color: #ffcc80;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+}
+
+/* ================= GRID ================= */
+.eh-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.eh-layout-2col {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.5fr);
+    gap: 14px;
+}
+
+/* ================= CARD ================= */
+.eh-card {
+    background: #0f0b07;
+    border-radius: 16px;
+    border: 1px solid #2b1a12;
+    padding: 14px 16px;
+    box-shadow: 0 14px 40px rgba(0,0,0,.6);
+}
+
+.eh-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .12em;
+    color: #9c8a75;
+}
+
+.eh-card-value {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.eh-card-sub {
+    font-size: 11px;
+    color: #b9a796;
+}
+
+/* ================= LIST ================= */
+.eh-mini-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.eh-mini-list li {
+    display: flex;
+    justify-content: space-between;
+    color: #d7cab9;
+}
+
+.eh-badge-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #ff9800;
+    margin-right: 6px;
+}
+
+/* ================= QUICK STATS ================= */
+.eh-quickstats {
+    margin-top: 10px;
+    font-size: 11px;
+}
+
+.eh-quickstats-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid #22150f;
+}
+
+.eh-quickstats-row:last-child {
+    border-bottom: none;
+}
+
+/* ================= CHARTS ================= */
+canvas {
+    width: 100% !important;
+    max-height: 260px;
+}
+
+/* ================= RESPONSIVE (ONLY FIXES) ================= */
+@media (max-width: 1100px) {
+    .eh-main {
+        margin: 0 !important;
+        padding: 14px;
+    }
+
+    .eh-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .eh-layout-2col {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .eh-topbar {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .eh-topbar-title {
+        font-size: 18px;
+    }
+
+    .eh-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .eh-card {
+        padding: 12px;
+    }
+
+    .eh-card-value {
+        font-size: 22px;
+    }
+
+    canvas {
+        max-height: 180px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="eh-main">
+
+    <!-- TOP BAR -->
+    <div class="eh-topbar">
+        <div class="eh-topbar-title">Dashboard</div>
+        <div class="eh-user-pill">
+            <div class="eh-user-avatar">{{ request.user.username|first|upper }}</div>
+            <div class="eh-user-info">
+                <span class="eh-user-name">{{ request.user.username }}</span>
+                <span class="eh-user-role">Admin</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- STATS -->
+    <section class="eh-grid">
+        <div class="eh-card">
+            <div class="eh-card-header">Total Users</div>
+            <div class="eh-card-value">{{ total_users|default:0 }}</div>
+            <div class="eh-card-sub">
+                Customers: {{ total_customers|default:0 }} · Organizers: {{ total_organizers|default:0 }}
+            </div>
+        </div>
+
+        <div class="eh-card">
+            <div class="eh-card-header">Total Events</div>
+            <div class="eh-card-value">{{ total_events|default:0 }}</div>
+            <div class="eh-card-sub">Upcoming: {{ upcoming_events_count|default:0 }}</div>
+        </div>
+
+        <div class="eh-card">
+            <div class="eh-card-header">Tickets Sold</div>
+            <div class="eh-card-value">{{ tickets_sold|default:0 }}</div>
+            <div class="eh-card-sub">Capacity: {{ total_capacity|default:0 }}</div>
+        </div>
+
+        <div class="eh-card">
+            <div class="eh-card-header">Revenue</div>
+            <div class="eh-card-value">₹ {{ total_revenue|default:0 }}</div>
+            <div class="eh-card-sub">Avg tickets / event: {{ avg_tickets_per_event|default:0 }}</div>
+        </div>
+    </section>
+
+    <!-- CHARTS -->
+    <section class="eh-layout-2col">
+        <div class="eh-card">
+            <div class="eh-card-header">Sales Revenue</div>
+            <canvas id="revenueChart"></canvas>
+        </div>
+
+        <div class="eh-card">
+            <div class="eh-card-header">Ticket Sales</div>
+            <canvas id="ticketChart"></canvas>
+        </div>
+    </section>
+
+    <!-- BOTTOM -->
+    <section class="eh-layout-2col">
+        <div class="eh-card">
+            <div class="eh-card-header">Popular Events</div>
+            {% if popular_events %}
+                <ul class="eh-mini-list">
+                    {% for ev in popular_events %}
+                        <li>
+                            <span>{{ ev.title }}</span>
+                            <span>{{ ev.tickets }} tickets</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="font-size:12px;color:#7f7162;">No events yet.</p>
+            {% endif %}
+        </div>
+
+        <div class="eh-card">
+            <div class="eh-card-header">Upcoming Event</div>
+
+            {% if upcoming_event %}
+                <strong>{{ upcoming_event.title }}</strong>
+                <p class="eh-card-sub">
+                    {{ upcoming_event.date|date:"M j, Y" }} · {{ upcoming_event.location }}
+                </p>
+
+                <div class="eh-quickstats">
+                    <div class="eh-quickstats-row"><span>Total capacity</span><span>{{ total_capacity }}</span></div>
+                    <div class="eh-quickstats-row"><span>Tickets sold</span><span>{{ tickets_sold }}</span></div>
+                    <div class="eh-quickstats-row"><span>Seats available</span><span>{{ total_available }}</span></div>
+                    <div class="eh-quickstats-row"><span>Avg tickets / event</span><span>{{ avg_tickets_per_event }}</span></div>
+                </div>
+            {% else %}
+                <p style="font-size:12px;color:#7f7162;">No upcoming event.</p>
+            {% endif %}
+        </div>
+    </section>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const revenueLabels = {{ revenue_labels|default:"[]"|safe }};
+const revenueValues = {{ revenue_values|default:"[]"|safe }};
+const ticketsSold = {{ tickets_sold|default:0 }};
+const ticketsAvailable = {{ total_available|default:0 }};
+
+if (document.getElementById("revenueChart")) {
+    new Chart(revenueChart, {
+        type: "bar",
+        data: {
+            labels: revenueLabels,
+            datasets: [{
+                data: revenueValues,
+                backgroundColor: "#ff9800"
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { display:false } }
+        }
+    });
+}
+
+if (document.getElementById("ticketChart")) {
+    new Chart(ticketChart, {
+        type: "doughnut",
+        data: {
+            labels: ["Sold", "Available"],
+            datasets: [{
+                data: [ticketsSold, ticketsAvailable],
+                backgroundColor: ["#ff708b", "#2d3038"],
+                cutout: "65%"
+            }]
+        },
+        options: { responsive:true }
+    });
+}
+</script>
+{% endblock %}

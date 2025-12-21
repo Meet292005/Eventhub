@@ -1,0 +1,285 @@
+{% extends "nav.html" %}
+
+{% block title %}Event Hub - All Events{% endblock %}
+
+{% block content %}
+
+<style>
+/* ================= SEARCH ================= */
+.search-section {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.search-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+.search-input {
+    width: 100%;
+    max-width: 500px;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: none;
+    background: rgba(243,237,237,0.94);
+}
+.search-btn {
+    background: #ff6600;
+    color: #fff;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: bold;
+    border: none;
+    text-decoration: none;
+}
+.search-btn:hover {
+    background: #e65c00;
+}
+
+/* ================= FILTERS ================= */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.filter-dropdown {
+    padding: 0.6rem;
+    border-radius: 8px;
+    border: none;
+    min-width: 150px;
+}
+
+/* ================= EVENT CARD ================= */
+.event-item {
+    animation: fadeUp 0.6s ease forwards;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.event-card {
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(12px);
+    border-radius: 15px;
+    overflow: hidden;
+    transition: 0.3s;
+    color: #fff;
+    position: relative;
+}
+.event-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 12px 30px rgba(255,102,0,0.4);
+}
+
+.event-image {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.event-body {
+    padding: 1rem;
+}
+.event-category {
+    background: #ff6600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+.event-title {
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+.event-meta {
+    font-size: 0.9rem;
+    color: #ccc;
+}
+
+/* ================= STATUS BADGE ================= */
+.event-status {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.status-over { background: #ff4444; }
+.status-upcoming { background: #2ecc71; color: #000; }
+
+/* ================= BUTTON ================= */
+.event-btn {
+    display: block;
+    width: 100%;
+    background: #ffcc00;
+    color: #000;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-weight: bold;
+    margin-top: 0.8rem;
+    text-decoration: none;
+    text-align: center;
+}
+.event-btn:hover {
+    background: #e6b800;
+}
+
+/* ================= PAGINATION ================= */
+.pagination .page-link {
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    border: none;
+    margin: 0 4px;
+    border-radius: 8px;
+}
+.pagination .page-link:hover,
+.pagination .active .page-link {
+    background: #ff6600;
+}
+</style>
+
+<section class="search-section">
+    <h1 class="text-white mb-4">All Events</h1>
+
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Search events by title or location..."
+               onkeyup="filterEvents()">
+        <button class="search-btn" onclick="filterEvents()">Search</button>
+        <a href="{% url 'recommended_events' %}" class="search-btn">🔮 Suggested for You</a>
+    </div>
+
+    <div class="filters">
+        <!-- CATEGORY FILTER -->
+        <select id="typeFilter" class="filter-dropdown" onchange="filterEvents()">
+            <option value="">All Types</option>
+            {% for cat in categories %}
+                <option value="{{ cat }}"
+                    {% if selected_category == cat %}selected{% endif %}>
+                    {{ cat|title }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <!-- DATE FILTER -->
+        <select id="dateFilter" class="filter-dropdown" onchange="filterEvents()">
+            <option value="">All Dates</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+        </select>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row g-4" id="eventList">
+        {% for event in events %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 event-item"
+             data-title="{{ event.title|lower }}"
+             data-category="{{ event.category|lower }}"
+             data-date="{{ event.date|date:'Y-m-d' }}"
+             data-location="{{ event.location|lower }}">
+
+            <div class="event-card h-100">
+                {% if event.date < today %}
+                    <span class="event-status status-over">Over</span>
+                {% else %}
+                    <span class="event-status status-upcoming">Upcoming</span>
+                {% endif %}
+
+                <img src="{{ event.banner.url }}" class="event-image">
+
+                <div class="event-body">
+                    <span class="event-category">{{ event.category }}</span>
+                    <h5 class="event-title">{{ event.title }}</h5>
+
+                    <div class="event-meta">
+                        📅 {{ event.date|date:"F j, Y" }}<br>
+                        🕒 {{ event.time|time:"h:i A" }} - {{ event.end_time|time:"h:i A" }}<br>
+                        📍 {{ event.location }}
+                    </div>
+
+                    <a href="{% url 'user_event_detail' event.id %}" class="event-btn">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-light">No events available.</p>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <nav class="mt-5 d-flex justify-content-center">
+        <ul class="pagination">
+
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">«</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                <li class="page-item active">
+                    <span class="page-link">{{ num }}</span>
+                </li>
+                {% elif num > page_obj.number|add:-2 and num < page_obj.number|add:2 %}
+                <li class="page-item">
+                    <a class="page-link"
+                       href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">»</a>
+            </li>
+            {% endif %}
+
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+
+<script>
+function filterEvents() {
+    const search = searchInput.value.toLowerCase();
+    const type = typeFilter.value.toLowerCase();
+    const date = dateFilter.value;
+    const today = new Date().toISOString().split("T")[0];
+
+    document.querySelectorAll(".event-item").forEach(e => {
+        let show = true;
+
+        if (search && !(e.dataset.title.includes(search) || e.dataset.location.includes(search)))
+            show = false;
+
+        if (type && !e.dataset.category.includes(type))
+            show = false;
+
+        if (date === "upcoming" && e.dataset.date < today)
+            show = false;
+
+        if (date === "past" && e.dataset.date >= today)
+            show = false;
+
+        e.style.display = show ? "block" : "none";
+    });
+}
+document.addEventListener("DOMContentLoaded", filterEvents);
+</script>
+
+{% endblock %}

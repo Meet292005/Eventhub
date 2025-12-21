@@ -1,0 +1,209 @@
+{% extends "profile/base_dashboard.html" %}
+{% block content %}
+<style>
+  body {
+    background-color: #121212;
+    color: white;
+  }
+
+  .profile-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .profile-header img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+    border-radius: 50%;
+    box-shadow: 0 0 10px rgba(255, 193, 7, 0.4);
+  }
+
+  .profile-card {
+    background-color: #1e1e1e;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.15);
+  }
+
+  .profile-label {
+    color: #ccc;
+    font-weight: 500;
+  }
+
+  .profile-value {
+    font-weight: 600;
+    color: #fff;
+  }
+
+  .dashboard-section {
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.1);
+  }
+
+  .dashboard-section h4 {
+    color: #ffc107;
+    margin-bottom: 1rem;
+  }
+
+  .event-card {
+    background: linear-gradient(145deg, #2a2a2a, #1c1c1c);
+    padding: 1rem;
+    border-radius: 10px;
+    margin-bottom: 1rem;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 0 5px rgba(255, 102, 0, 0.3);
+  }
+
+  .event-card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(255, 140, 0, 0.4);
+  }
+
+  .btn-orange {
+    background-color: #ff6a00;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 15px;
+    transition: background 0.3s, transform 0.3s;
+  }
+
+  .btn-orange:hover {
+    background-color: #ff812b;
+    transform: scale(1.05);
+  }
+
+  @media (max-width: 768px) {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .profile-header img {
+      margin-bottom: 1rem;
+    }
+
+    .event-card {
+      text-align: center;
+    }
+
+    .btn-orange:hover {
+      transform: none;
+    }
+  }
+
+  @media (max-width: 576px) {
+    .dob-select-group > div {
+      width: 100% !important;
+    }
+  }
+</style>
+
+<div class="container px-3 px-md-4">
+  <div class="text-center mb-4">
+    <h3 class="text-warning fw-bold">👤 Your Profile</h3>
+    <p class="text-light">Here is your saved information</p>
+  </div>
+
+  <div class="profile-header mb-4">
+    {% if user.customer.image %}
+      <img src="{{ user.customer.image.url }}" alt="Profile Image">
+    {% else %}
+      <img src="{{ MEDIA_URL }}profile_pics/default.jpg" alt="Default Image">
+    {% endif %}
+
+    <div>
+      <h4 class="text-light mb-1">{{ user.first_name|default:user.username }}</h4>
+      <p class="text-light mb-0">{{ user.email }}</p>
+    </div>
+  </div>
+
+  <div class="profile-card mb-5">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <span class="profile-label">Phone Number</span><br>
+        <span class="profile-value">{{ user.customer.phone|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">City</span><br>
+        <span class="profile-value">{{ user.customer.city|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">State</span><br>
+        <span class="profile-value">{{ user.customer.state|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Language</span><br>
+        <span class="profile-value">{{ user.customer.language|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Interests</span><br>
+        <span class="profile-value">{{ user.customer.interests|default:"—" }}</span>
+      </div>
+      <div class="col-md-6">
+        <span class="profile-label">Date Of Birth</span><br>
+        <span class="profile-value">{{ user.customer.dob|default:"—" }}</span>
+      </div>
+      <div class="col-12">
+        <span class="profile-label">Address</span><br>
+        <span class="profile-value">{{ user.customer.address|default:"—" }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Upcoming Events -->
+  <div class="dashboard-section">
+    <h4>📅 Upcoming Events</h4>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="event-card">
+          <h5>🎨 Art Exhibition</h5>
+          <p>Sept 22–23, 2024<br>bhavnagar</p>
+          <button class="btn btn-orange">Join Event</button>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="event-card">
+          <h5>🔺 Tech Conference</h5>
+          <p>Oct 10, 2024<br>bhavnagar</p>
+          <button class="btn btn-orange">View Ticket</button>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="event-card">
+          <h5>🎵 Music Festival</h5>
+          <p>Nov 5, 2024<br>bhavnagar</p>
+          <button class="btn btn-orange">View Ticket</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Saved Events -->
+  <div class="dashboard-section">
+    <h4>💾 Saved Events</h4>
+    <div class="event-card d-flex justify-content-between align-items-center flex-wrap">
+      <div class="mb-2">
+        <h6>🥘 Food Expo</h6>
+        <p>April 20, 2024<br>bhavnagar</p>
+      </div>
+      <button class="btn btn-orange">Remove</button>
+    </div>
+  </div>
+
+  <!-- Event Suggestions -->
+  <div class="dashboard-section">
+    <h4>✨ Event Suggestions</h4>
+    <div class="d-grid gap-2">
+      <button class="btn btn-orange">You might also like...</button>
+      <button class="btn btn-orange">Trending near you</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

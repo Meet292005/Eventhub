@@ -1,0 +1,24 @@
+{% extends "organizer_profile/base_dashboard.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="text-center mb-4">📢 Event Reviews</h2>
+
+  {% if reviews %}
+    <div class="list-group">
+      {% for review in reviews %}
+        <div class="list-group-item bg-dark text-light mb-3 rounded-3">
+          <h5 class="mb-1">{{ review.event.title }}</h5>
+          <small>
+            by {{ review.user.username }}
+            on {{ review.created_at|date:"d M Y, h:i a" }}
+          </small>
+          <p class="mt-2 mb-0">{{ review.text }}</p>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No reviews yet for your events.</p>
+  {% endif %}
+</div>
+{% endblock %}

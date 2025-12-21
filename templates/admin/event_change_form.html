@@ -1,0 +1,297 @@
+{% extends "admin/change_form.html" %}
+{% load i18n %}
+
+{# =========================
+   Extra CSS – Event only
+   ========================= #}
+{% block extrastyle %}
+    {{ block.super }}
+    <style>
+        /* Scope everything to Event form only */
+        body.app-user.model-event.change-form #content-main {
+            max-width: 1100px;
+            margin: 0 auto 20px;
+            animation: eh-fade-in 0.25s ease-out;
+        }
+
+        /* Main form card */
+        body.app-user.model-event.change-form #content-main > form {
+            background: radial-gradient(circle at top,
+                        rgba(34, 19, 11, 0.96) 0,
+                        #050505 55%);
+            border-radius: 22px;
+            border: 1px solid #2b1a12;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.9);
+            padding: 18px 20px 16px;
+        }
+
+        /* Hide default big title that overlaps sidebar */
+        body.app-user.model-event.change-form #content > h1 {
+            display: none !important;
+        }
+
+        /* Fieldset titles (General / Dates etc.) */
+        body.app-user.model-event.change-form fieldset.module.aligned {
+            border: none;
+            padding: 6px 0 4px;
+            margin-bottom: 12px;
+        }
+
+        body.app-user.model-event.change-form fieldset.module.aligned > h2 {
+            font-size: 12px;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: #9c8a75;
+            margin: 4px 4px 10px;
+            position: relative;
+            padding-left: 14px;
+        }
+
+        body.app-user.model-event.change-form fieldset.module.aligned > h2::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 50%;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #ff9800;
+            box-shadow: 0 0 12px rgba(255, 152, 0, 0.7);
+            transform: translateY(-50%);
+        }
+
+        /* Rows: label + field */
+        body.app-user.model-event.change-form form.aligned .form-row {
+            display: grid;
+            grid-template-columns: 190px minmax(0, 1fr);
+            align-items: flex-start;
+            gap: 14px;
+            padding: 9px 14px;
+            margin: 4px 0;
+            border-radius: 14px;
+            background: #050505;
+            border: 1px solid transparent;
+            transition:
+                border-color 0.18s ease,
+                background 0.18s ease,
+                box-shadow 0.18s ease,
+                transform 0.18s ease;
+        }
+
+        body.app-user.model-event.change-form form.aligned .form-row:nth-child(odd) {
+            background: #070606;
+        }
+
+        body.app-user.model-event.change-form form.aligned .form-row:hover {
+            border-color: rgba(255, 152, 0, 0.55);
+            background: radial-gradient(circle at top left,
+                        rgba(43, 26, 18, 0.9) 0,
+                        #050505 60%);
+            box-shadow: 0 12px 26px rgba(0, 0, 0, 0.75);
+            transform: translateY(-1px);
+        }
+
+        /* Labels */
+        body.app-user.model-event.change-form form.aligned .form-row > div > label,
+        body.app-user.model-event.change-form form.aligned .form-row > label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #e6d5c2;
+            padding-top: 3px;
+        }
+
+        body.app-user.model-event.change-form label.required::after {
+            content: " *";
+            color: #ffb74d;
+        }
+
+        /* Inputs / selects / textareas */
+        body.app-user.model-event.change-form input[type="text"],
+        body.app-user.model-event.change-form input[type="number"],
+        body.app-user.model-event.change-form input[type="email"],
+        body.app-user.model-event.change-form input[type="url"],
+        body.app-user.model-event.change-form input[type="date"],
+        body.app-user.model-event.change-form input[type="time"],
+        body.app-user.model-event.change-form select,
+        body.app-user.model-event.change-form textarea {
+            width: 100%;
+            background: #111014;
+            border-radius: 12px;
+            border: 1px solid #2d2620;
+            padding: 7px 10px;
+            font-size: 13px;
+            color: #f5f5f5;
+            box-sizing: border-box;
+            transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        body.app-user.model-event.change-form textarea {
+            min-height: 100px;
+        }
+
+        body.app-user.model-event.change-form input:focus,
+        body.app-user.model-event.change-form select:focus,
+        body.app-user.model-event.change-form textarea:focus {
+            outline: none;
+            border-color: #ff9800;
+            box-shadow: 0 0 0 1px rgba(255, 152, 0, 0.45);
+            background: #15121a;
+        }
+
+        /* Help text & date/time notes */
+        body.app-user.model-event.change-form .form-row .datetimeshortcuts,
+        body.app-user.model-event.change-form .help,
+        body.app-user.model-event.change-form .helptext {
+            font-size: 10px;
+            color: #8c7b68;
+        }
+
+        /* Error messages */
+        body.app-user.model-event.change-form .errorlist {
+            margin: 4px 0 0;
+            padding-left: 0;
+            list-style: none;
+            font-size: 11px;
+            color: #ff8a80;
+        }
+
+        /* Submit row */
+        body.app-user.model-event.change-form .submit-row {
+            max-width: 1100px;
+            margin: 14px auto 10px;
+            padding: 10px 16px;
+            border-radius: 0 0 22px 22px;
+            background: #050505;
+            border: 1px solid #2b1a12;
+            box-shadow: 0 14px 40px rgba(0, 0, 0, 0.85);
+        }
+
+        body.app-user.model-event.change-form .submit-row input[type="submit"],
+        body.app-user.model-event.change-form .submit-row input[name="_continue"],
+        body.app-user.model-event.change-form .submit-row input[name="_addanother"] {
+            border-radius: 999px;
+            padding: 6px 18px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            margin-left: 6px;
+            transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+        }
+
+        body.app-user.model-event.change-form .submit-row input[type="submit"] {
+            background: linear-gradient(90deg, #ff9800, #ffb74d);
+            color: #1b1308;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        body.app-user.model-event.change-form .submit-row input[name="_continue"],
+        body.app-user.model-event.change-form .submit-row input[name="_addanother"] {
+            background: #171319;
+            color: #e0d0c0;
+            border: 1px solid #2d2620;
+        }
+
+        body.app-user.model-event.change-form .submit-row input:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 0 14px rgba(255, 152, 0, 0.55);
+            transform: translateY(-1px);
+        }
+
+        /* Banner preview inside Banner row */
+        body.app-user.model-event.change-form .form-row.field-banner .eh-banner-preview {
+            margin-top: 6px;
+            max-width: 320px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #2b1a12;
+            background: #111;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.7);
+        }
+
+        body.app-user.model-event.change-form .form-row.field-banner .eh-banner-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+body.app-user.model-event.change-form #content > h1,
+body.app-user.model-event.change-form #content h2 {
+    display: none !important;
+}
+
+
+
+
+        /* Small fade-in animation */
+        @keyframes eh-fade-in {
+            from { opacity: 0; transform: translateY(4px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 820px) {
+            body.app-user.model-event.change-form form.aligned .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{# =========================
+   Banner image preview JS
+   ========================= #}
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            try {
+                const row = document.querySelector(".form-row.field-banner");
+                if (!row) return;
+
+                const link = row.querySelector("a[href]");
+                const fileInput = row.querySelector("input[type='file']");
+                let preview = null;
+                let img = null;
+
+                function ensurePreview() {
+                    if (preview) return preview;
+                    preview = document.createElement("div");
+                    preview.className = "eh-banner-preview";
+                    img = document.createElement("img");
+                    preview.appendChild(img);
+
+                    const targetParent = fileInput ? fileInput.parentElement : (link && link.parentElement);
+                    if (targetParent) {
+                        targetParent.insertBefore(preview, targetParent.firstChild);
+                    }
+                    return preview;
+                }
+
+                // Existing image from Django
+                if (link) {
+                    const url = link.getAttribute("href");
+                    if (url) {
+                        ensurePreview();
+                        img.src = url;
+                        img.alt = "Banner preview";
+                    }
+                }
+
+                // Live preview when selecting a new file
+                if (fileInput) {
+                    fileInput.addEventListener("change", function (e) {
+                        const file = e.target.files && e.target.files[0];
+                        if (!file) return;
+                        const url = URL.createObjectURL(file);
+                        ensurePreview();
+                        img.src = url;
+                        img.alt = "Banner preview";
+                    });
+                }
+            } catch (e) {
+                console.warn("Banner preview error:", e);
+            }
+        });
+    </script>
+{% endblock %}

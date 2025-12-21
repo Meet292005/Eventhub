@@ -1,0 +1,237 @@
+{% extends "nav.html" %}
+
+{% block title %}Event Hub - All Events{% endblock %}
+
+{% block content %}
+
+<style>
+    /* Search Section */
+    .search-section {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 500px;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        border: none;
+        font-size: 1rem;
+        background: rgba(243, 237, 237, 0.941);
+        color: #000000;
+    }
+
+    .search-input::placeholder {
+        color: #000000;
+    }
+
+    .search-btn {
+        background-color: #ff6600;
+        color: white;
+        padding: 0.6rem 1.2rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .search-btn:hover {
+        background-color: #e65c00;
+    }
+
+    /* Filters */
+    .filters {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-dropdown {
+        padding: 0.6rem;
+        border-radius: 8px;
+        border: none;
+        min-width: 150px;
+        background: rgba(255, 255, 255, 0.811);
+        color: #000000;
+    }
+
+    /* Event Cards */
+    .event-card {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(12px);
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.4);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        color: #fff;
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0px 8px 20px rgba(255, 102, 0, 0.3);
+    }
+
+    .event-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .event-body {
+        padding: 1rem;
+    }
+
+    .event-category {
+        display: inline-block;
+        background-color: #ff6600;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-title {
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .event-meta {
+        font-size: 0.9rem;
+        color: #ccc;
+        margin-bottom: 1rem;
+    }
+
+    .event-btn {
+        display: block;
+        width: 100%;
+        background-color: #ffcc00;
+        color: #000;
+        padding: 0.5rem;
+        text-align: center;
+        border-radius: 8px;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .event-btn:hover {
+        background-color: #e6b800;
+    }
+</style>
+
+<section class="search-section">
+    <h1 class="text-white mb-4">All Events</h1>
+    <div class="search-bar">
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Search events by title or location..." onkeyup="filterEvents()">
+        <button class="search-btn" type="button" onclick="filterEvents()">Search</button>
+    </div>
+    <div class="filters">
+        <select id="typeFilter" class="filter-dropdown" onchange="filterEvents()">
+            <option value="">All Types</option>
+            <option value="concert">Concert</option>
+            <option value="seminar">Seminar</option>
+            <option value="sports">Sports</option>
+            <option value="workshop">Workshop</option>
+            <option value="music">Music</option>
+             <option value="tech">Tech</option>
+
+        </select>
+        <select id="dateFilter" class="filter-dropdown" onchange="filterEvents()">
+            <option value="">All Dates</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+        </select>
+    </div>
+</section>
+
+<div class="container">
+    <div class="row g-4" id="eventList">
+        {% for event in events %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3 event-item"
+             data-title="{{ event.title|lower }}"
+             data-category="{{ event.category|lower }}"
+             data-date="{{ event.date|date:'Y-m-d' }}"
+             data-location="{{ event.location|lower }}">
+            <div class="event-card h-100">
+                <img src="{{ event.banner.url }}" alt="Event Banner" class="event-image">
+                <div class="event-body">
+                    <span class="event-category">{{ event.category }}</span>
+                    <h5 class="event-title">{{ event.title }}</h5>
+                    <div class="event-meta">
+                        📅 {{ event.date|date:"F j, Y" }}<br>
+                        📍 {{ event.location }}
+                    </div>
+                    <a href="{% url 'user_event_detail' event.id %}" class="event-btn">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-center text-light">No events available at the moment.</p>
+        {% endfor %}
+
+        <!-- Hidden "No Events" message -->
+        <p id="noEventsMessage" class="text-center text-light mt-4" style="display:none;">
+            No events available for this filter.
+        </p>
+    </div>
+</div>
+
+<script>
+    function filterEvents() {
+        const searchValue = document.getElementById("searchInput").value.toLowerCase();
+        const typeValue = document.getElementById("typeFilter").value.toLowerCase();
+        const dateValue = document.getElementById("dateFilter").value;
+
+        const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+        const events = document.querySelectorAll(".event-item");
+
+        let visibleCount = 0;
+
+        events.forEach(event => {
+            const title = event.getAttribute("data-title");
+            const category = event.getAttribute("data-category");
+            const eventDate = event.getAttribute("data-date");
+            const location = event.getAttribute("data-location");
+
+            let visible = true;
+
+            // 🔍 Search by title OR location
+            if (searchValue && !(title.includes(searchValue) || location.includes(searchValue))) {
+                visible = false;
+            }
+
+            // Filter by type
+            if (typeValue && category !== typeValue) {
+                visible = false;
+            }
+
+            // Filter by date
+            if (dateValue === "upcoming" && eventDate < today) {
+                visible = false;
+            } else if (dateValue === "past" && eventDate >= today) {
+                visible = false;
+            }
+
+            event.style.display = visible ? "block" : "none";
+            if (visible) visibleCount++;
+        });
+
+        // 🚫 Show "No Events" message if none visible
+        document.getElementById("noEventsMessage").style.display =
+            visibleCount === 0 ? "block" : "none";
+    }
+</script>
+
+{% endblock %}

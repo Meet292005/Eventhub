@@ -142,6 +142,37 @@
 .pagination .active .page-link {
     background: #ff6600;
 }
+
+@media (max-width: 576px) {
+
+    .search-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.7rem;
+    }
+
+    .search-input {
+        max-width: 100%;
+        width: 100%;
+        font-size: 0.95rem;
+    }
+
+    .search-btn {
+        width: 100%;
+        text-align: center;
+        padding: 0.7rem;
+        font-size: 0.95rem;
+        border-radius: 10px;
+    }
+
+    /* Suggested button highlight */
+    .search-bar a.search-btn {
+        background: linear-gradient(135deg, #ff7a18, #ffb347);
+        color: #000;
+        font-weight: 700;
+    }
+}
+
 </style>
 
 <section class="search-section">

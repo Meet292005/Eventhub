@@ -114,7 +114,7 @@ def register(request):
             html_content = render_to_string("emails/register_email.html", {"username": username})
             msg = EmailMultiAlternatives(subject, "", to=[email])  # use different var name
             msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            msg.send(fail_silently=True)
 
 
 
@@ -151,7 +151,7 @@ def forgot_password(request):
             })
             msg = EmailMultiAlternatives(subject, "", to=[email])
             msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            msg.send(fail_silently=True)
 
             messages.success(request, "✅ OTP sent to your email.")
             return redirect("verify_otp")
@@ -235,7 +235,7 @@ def login_user(request):
                 html_content = render_to_string("emails/login_email.html", {"username": user.username})
                 msg = EmailMultiAlternatives(subject, "", to=[user.email])
                 msg.attach_alternative(html_content, "text/html")
-                msg.send()
+                msg.send(fail_silently=True)
 
                 # Redirect according to role
                 role = user.profile.role
@@ -729,7 +729,7 @@ def contact(request):
             })
             admin_msg = EmailMultiAlternatives(admin_subject, "", settings.DEFAULT_FROM_EMAIL, ["eventhubmk@gmail.com"])
             admin_msg.attach_alternative(admin_html, "text/html")
-            admin_msg.send()
+            admin_msg.send(fail_silently=True)
 
             # ✅ Auto reply to customer
             user_subject = "Thanks for Contacting EventHub 💬"
@@ -739,7 +739,7 @@ def contact(request):
             })
             user_msg = EmailMultiAlternatives(user_subject, "", settings.DEFAULT_FROM_EMAIL, [email])
             user_msg.attach_alternative(user_html, "text/html")
-            user_msg.send()
+            user_msg.send(fail_silently=True)
 
             messages.success(request, "✅ Your message has been sent successfully! Please check your email for confirmation.")
             print("✅ Contact message and auto-reply sent successfully.")
@@ -1491,7 +1491,7 @@ def save_event(request, event_id):
             msg.attach("banner.jpg", banner_data, "image/jpeg")
             msg.mixed_subtype = 'related'
 
-        msg.send()
+        msg.send(fail_silently=True)
 
     threading.Thread(target=send_email).start()
 
@@ -1534,7 +1534,7 @@ def save_event(request, event_id):
                             msg.attach("banner.jpg", banner_data, "image/jpeg")
                             msg.mixed_subtype = 'related'
 
-                        msg.send()
+                        msg.send(fail_silently=True)
 
                     threading.Timer(delay_seconds, send_reminder).start()
 
